@@ -198,19 +198,19 @@ advanceTrain(float dir)
 	//#####################################################################
 	// TODO: make this work for your train
 	//#####################################################################
-#ifdef EXAMPLE_SOLUTION
+
 	// note - we give a little bit more example code here than normal,
 	// so you can see how this works
 
-	if (arcLength->value()) {
-		float vel = ew.physics->value() ? physicsSpeed(this) : dir * (float)speed->value();
-		world.trainU += arclenVtoV(world.trainU, vel, this);
-	} else {
-		world.trainU +=  dir * ((float)speed->value() * .1f);
-	}
+	//if (arcLength->value()) {
+	//	float vel = ew.physics->value() ? physicsSpeed(this) : dir * (float)speed->value();
+	//	world.trainU += arclenVtoV(world.trainU, vel, this);
+	//} else {
+		this->m_Track.trainU +=  dir * ((float)speed->value() * .1f);
+	
 
-	float nct = static_cast<float>(world.points.size());
-	if (world.trainU > nct) world.trainU -= nct;
-	if (world.trainU < 0) world.trainU += nct;
-#endif
+	float nct = static_cast<float>(this->m_Track.points.size());
+	if (this->m_Track.trainU > nct) this->m_Track.trainU -= nct;
+	if (this->m_Track.trainU < 0) this->m_Track.trainU += nct;
+
 }

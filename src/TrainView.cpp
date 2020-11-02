@@ -775,7 +775,13 @@ void TrainView::getPos(const float t, Pnt3f & pos, Pnt3f & dir, Pnt3f& up)
 		up.x = Ot.x;
 		up.y = Ot.y;
 		up.z = Ot.z;
-		dir = (p3.pos - p0.pos);
+
+		float dTv[4] = { 3 * percent*percent,2 * percent,1,0 };
+		glm::vec4 dT = glm::make_vec4(dTv);
+		glm::vec3 dQt = G * M*dT;
+		dir.x = dQt.x;
+		dir.y = dQt.y;
+		dir.z = dQt.z;
 	}
 
 	else if (this->tw->splineBrowser->selected(3))
@@ -835,6 +841,12 @@ void TrainView::getPos(const float t, Pnt3f & pos, Pnt3f & dir, Pnt3f& up)
 		up.x = Ot.x;
 		up.y = Ot.y;
 		up.z = Ot.z;
-		dir = (p3.pos - p0.pos);
+		
+		float dTv[4] = { 3 * percent*percent,2 * percent,1,0 };
+		glm::vec4 dT = glm::make_vec4(dTv);
+		glm::vec3 dQt = G * M*dT;
+		dir.x = dQt.x;
+		dir.y = dQt.y;
+		dir.z = dQt.z;
 	}
 }

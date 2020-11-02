@@ -304,7 +304,7 @@ setProjection()
 	// Check whether we use the world camp
 	if (tw->worldCam->value())
 	{
-		arcball.setProjection(true);
+		arcball.setProjection(false);
 	}
 	// Or we use the top cam
 	else if (tw->topCam->value()) {

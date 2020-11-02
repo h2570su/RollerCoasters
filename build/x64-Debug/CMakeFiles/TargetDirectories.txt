@@ -1,4 +1,0 @@
-E:/Documents/1091CG/RollerCoasters/build/x64-Debug/CMakeFiles/RollerCoasters.dir
-E:/Documents/1091CG/RollerCoasters/build/x64-Debug/CMakeFiles/Utilities.dir
-E:/Documents/1091CG/RollerCoasters/build/x64-Debug/CMakeFiles/edit_cache.dir
-E:/Documents/1091CG/RollerCoasters/build/x64-Debug/CMakeFiles/rebuild_cache.dir

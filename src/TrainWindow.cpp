@@ -206,7 +206,7 @@ advanceTrain(float dir)
 	//	float vel = ew.physics->value() ? physicsSpeed(this) : dir * (float)speed->value();
 	//	world.trainU += arclenVtoV(world.trainU, vel, this);
 	//} else {
-		this->m_Track.trainU +=  dir * ((float)speed->value() * .1f);
+		this->m_Track.trainU +=  dir * ((float)speed->value() * .05f);
 	
 
 	float nct = static_cast<float>(this->m_Track.points.size());

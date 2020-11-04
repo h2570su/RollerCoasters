@@ -338,15 +338,18 @@ setProjection()
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		gluPerspective(40, aspect, 0.1, 1000);
+		gluPerspective(70, aspect, 0.1, 1000);
 
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
+		pos = pos + up * (trainHeight / 2) + dir * (trainLength*1.1 / 2);
 
+		Pnt3f lookat = pos + dir;
+		lookat = lookat * 1;
 
-		gluLookAt(pos.x, pos.y + trainHeight / 2, pos.z,
-			(dir + pos).x, (dir + pos).y, (dir + pos).z,
+		gluLookAt(pos.x, pos.y, pos.z,
+			lookat.x, lookat.y, lookat.z,
 			up.x, up.y, up.z);
 	}
 }
@@ -392,95 +395,147 @@ void TrainView::drawStuff(bool doingShadows)
 	Pnt3f pos, dir, up;
 	this->getPos(this->tw->m_Track.trainU, pos, dir, up);
 
-	if (tw->trainCam->value())
+
+	glPushMatrix();
+	glTranslatef(pos.x, pos.y, pos.z);
+
+	////pitch
+	//float xTan = up.z / up.y;
+	//glRotatef(radiansToDegrees(atan(xTan)) + (up.y < 0 ? 180 : 0), 1, 0, 0);
+	////roll
+	//float zTan = up.x / up.y;
+	//glRotatef(radiansToDegrees(-atan(zTan)) + (up.y < 0 ? 180 : 0), 0, 0, 1);
+
+
+	////yaw
+	//float yTan = dir.x / dir.z;
+	//glRotatef(radiansToDegrees(atan(yTan)) + ((dir.z < 0) ? 180 : 0), 0, 1, 0);
+	////pitch
+	//float xyTan = dir.y / sqrt(dir.x*dir.x + dir.z*dir.z);
+	//glRotatef(radiansToDegrees(-atan(xyTan)), 1, 0, 0);
+
+	//pitch
+	float xDeg = radiansToDegrees(atan2(up.z, up.y));
+	xDeg = (xDeg < 0) ? xDeg + 360 : xDeg;
+	glRotatef(xDeg, 1, 0, 0);
+
+	//roll
+	float zDeg = radiansToDegrees(-atan2(up.x, up.y));
+	zDeg = (zDeg < 0) ? zDeg + 360 : zDeg;
+	if (up.x != 0.0)
 	{
+		glRotatef(zDeg, 0, 0, 1);
+	}
 
-
+	//yaw
+	float yDeg = radiansToDegrees(atan2(dir.x, dir.z));
+	yDeg = (yDeg < 0) ? yDeg + 360 : yDeg;
+	if (dir.x == 0.0f&&dir.z == 0.0f&&abs(up.x) == 1)
+	{
+		yDeg = 0;
+	}
+	else if (dir.z != 0.0f&&abs(up.x) == 1)
+	{
+		yDeg = radiansToDegrees(atan2(dir.y, dir.z));
+		yDeg = (yDeg < 0) ? yDeg + 360 : yDeg;
+		if (signbit(up.x))
+		{
+			glRotatef(yDeg, 0, 1, 0);
+		}
+		else
+		{
+			glRotatef(-yDeg, 0, 1, 0);
+		}
+	}
+	else if (dir.z == 0.0f && !abs(up.x) == 1 && (yDeg == 90 || yDeg == 270))
+	{
+		yDeg = radiansToDegrees(atan2(dir.x, dir.y));
+		yDeg = (yDeg < 0) ? yDeg + 360 : yDeg;
+		if (signbit(up.z))
+		{
+			glRotatef(yDeg, 0, 1, 0);
+		}
+		else
+		{
+			glRotatef(-yDeg, 0, 1, 0);
+		}
 	}
 	else
 	{
-		glPushMatrix();
-		glTranslatef(pos.x, pos.y, pos.z);
-
-		//pitch
-		float xTan = up.z / up.y;
-		glRotatef(radiansToDegrees(atan(xTan)) + (up.y < 0 ? 180 : 0), 1, 0, 0);
-		//roll
-		float zTan = up.x / up.y;
-		glRotatef(radiansToDegrees(-atan(zTan)) + (up.y < 0 ? 180 : 0), 0, 0, 1);
-
-
-		//yaw
-		float yTan = dir.x / dir.z;
-		glRotatef(radiansToDegrees(atan(yTan)) + ((dir.z < 0) ? 180 : 0), 0, 1, 0);
-		//pitch
+		if (up.y >= 0.0)
+		{
+			glRotatef(yDeg, 0, 1, 0);
+		}
+		else
+		{
+			glRotatef(-yDeg + 180, 0, 1, 0);
+		}
+	}
+	//pitch
 		float xyTan = dir.y / sqrt(dir.x*dir.x + dir.z*dir.z);
 		glRotatef(radiansToDegrees(-atan(xyTan)), 1, 0, 0);
 
-
-
-
-		glTranslatef(0, trainHeight / 2, 0);
+	glTranslatef(0, trainHeight / 2, 0);
 
 #pragma region trainCar
-		glBegin(GL_QUADS);
-		if (!doingShadows)
-		{
-			glColor3ub(255, 255, 255);
-		}
-
-		glNormal3f(0, -1, 0);
-		glVertex3f(-trainWidth / 2, -trainHeight / 2, -trainLength / 2);
-		glVertex3f(trainWidth / 2, -trainHeight / 2, -trainLength / 2);
-		glVertex3f(trainWidth / 2, -trainHeight / 2, trainLength / 2);
-		glVertex3f(-trainWidth / 2, -trainHeight / 2, trainLength / 2);
-
-
-
-
-		glNormal3f(-1, 0, 0);
-		glVertex3f(-trainWidth / 2, -trainHeight / 2, -trainLength / 2);
-		glVertex3f(-trainWidth / 2, trainHeight / 2, -trainLength / 2);
-		glVertex3f(-trainWidth / 2, trainHeight / 2, trainLength / 2);
-		glVertex3f(-trainWidth / 2, -trainHeight / 2, trainLength / 2);
-
-		glNormal3f(1, 0, 0);
-		glVertex3f(trainWidth / 2, -trainHeight / 2, -trainLength / 2);
-		glVertex3f(trainWidth / 2, trainHeight / 2, -trainLength / 2);
-		glVertex3f(trainWidth / 2, trainHeight / 2, trainLength / 2);
-		glVertex3f(trainWidth / 2, -trainHeight / 2, trainLength / 2);
-
-		glNormal3f(0, 0, -1);
-		glVertex3f(-trainWidth / 2, -trainHeight / 2, -trainLength / 2);
-		glVertex3f(trainWidth / 2, -trainHeight / 2, -trainLength / 2);
-		glVertex3f(trainWidth / 2, trainHeight / 2, -trainLength / 2);
-		glVertex3f(-trainWidth / 2, trainHeight / 2, -trainLength / 2);
-		if (!doingShadows)
-		{
-			glColor3ub(255, 255, 0);
-		}
-
-		glNormal3f(0, 1, 0);
-		glVertex3f(-trainWidth / 2, trainHeight / 2, -trainLength / 2);
-		glVertex3f(trainWidth / 2, trainHeight / 2, -trainLength / 2);
-		glVertex3f(trainWidth / 2, trainHeight / 2, trainLength / 2);
-		glVertex3f(-trainWidth / 2, trainHeight / 2, trainLength / 2);
-
-		if (!doingShadows)
-		{
-			glColor3ub(255, 0, 0);
-		}
-		glNormal3f(0, 0, 1);
-		glVertex3f(-trainWidth / 2, -trainHeight / 2, trainLength / 2);
-		glVertex3f(trainWidth / 2, -trainHeight / 2, trainLength / 2);
-		glVertex3f(trainWidth / 2, trainHeight / 2, trainLength / 2);
-		glVertex3f(-trainWidth / 2, trainHeight / 2, trainLength / 2);
-
-
-		glEnd();
-#pragma endregion
-		glPopMatrix();
+	glBegin(GL_QUADS);
+	if (!doingShadows)
+	{
+		glColor3ub(255, 255, 255);
 	}
+
+	glNormal3f(0, -1, 0);
+	glVertex3f(-trainWidth / 2, -trainHeight / 2, -trainLength / 2);
+	glVertex3f(trainWidth / 2, -trainHeight / 2, -trainLength / 2);
+	glVertex3f(trainWidth / 2, -trainHeight / 2, trainLength / 2);
+	glVertex3f(-trainWidth / 2, -trainHeight / 2, trainLength / 2);
+
+
+
+
+	glNormal3f(-1, 0, 0);
+	glVertex3f(-trainWidth / 2, -trainHeight / 2, -trainLength / 2);
+	glVertex3f(-trainWidth / 2, trainHeight / 2, -trainLength / 2);
+	glVertex3f(-trainWidth / 2, trainHeight / 2, trainLength / 2);
+	glVertex3f(-trainWidth / 2, -trainHeight / 2, trainLength / 2);
+
+	glNormal3f(1, 0, 0);
+	glVertex3f(trainWidth / 2, -trainHeight / 2, -trainLength / 2);
+	glVertex3f(trainWidth / 2, trainHeight / 2, -trainLength / 2);
+	glVertex3f(trainWidth / 2, trainHeight / 2, trainLength / 2);
+	glVertex3f(trainWidth / 2, -trainHeight / 2, trainLength / 2);
+
+	glNormal3f(0, 0, -1);
+	glVertex3f(-trainWidth / 2, -trainHeight / 2, -trainLength / 2);
+	glVertex3f(trainWidth / 2, -trainHeight / 2, -trainLength / 2);
+	glVertex3f(trainWidth / 2, trainHeight / 2, -trainLength / 2);
+	glVertex3f(-trainWidth / 2, trainHeight / 2, -trainLength / 2);
+	if (!doingShadows)
+	{
+		glColor3ub(255, 255, 0);
+	}
+
+	glNormal3f(0, 1, 0);
+	glVertex3f(-trainWidth / 2, trainHeight / 2, -trainLength / 2);
+	glVertex3f(trainWidth / 2, trainHeight / 2, -trainLength / 2);
+	glVertex3f(trainWidth / 2, trainHeight / 2, trainLength / 2);
+	glVertex3f(-trainWidth / 2, trainHeight / 2, trainLength / 2);
+
+	if (!doingShadows)
+	{
+		glColor3ub(255, 0, 0);
+	}
+	glNormal3f(0, 0, 1);
+	glVertex3f(-trainWidth / 2, -trainHeight / 2, trainLength / 2);
+	glVertex3f(trainWidth / 2, -trainHeight / 2, trainLength / 2);
+	glVertex3f(trainWidth / 2, trainHeight / 2, trainLength / 2);
+	glVertex3f(-trainWidth / 2, trainHeight / 2, trainLength / 2);
+
+
+	glEnd();
+#pragma endregion
+	glPopMatrix();
+
 
 
 	// draw the track
@@ -494,10 +549,10 @@ void TrainView::drawStuff(bool doingShadows)
 
 	float t = 0.0;
 	//Pnt3f pos, dir, up;
-	getPos(0, pos, dir, up);
+	getPos(t, pos, dir, up);
 	Pnt3f pv = pos;
 	Pnt3f po = up;
-	for (int i = 0; i < this->m_pTrack->points.size(); i++)
+	for (int i = t; i < this->m_pTrack->points.size(); i++)
 	{
 		for (int j = 0; j < DIVIDE_LINE; j++)
 		{
@@ -537,21 +592,64 @@ void TrainView::drawStuff(bool doingShadows)
 
 			glPushMatrix();
 			glTranslatef(cv.x, cv.y, cv.z);
-			float xTan = co.z / co.y;
-			glRotatef(radiansToDegrees(atan(xTan)) + (co.z < 0 ? 180 : 0), 1, 0, 0);
 
-			float zTan = co.x / co.y;
-			glRotatef(radiansToDegrees(-atan(zTan)) + (co.y < 0 ? 180 : 0), 0, 0, 1);
+			//pitch
+			float xDeg = radiansToDegrees(atan2(co.z, co.y));
+			xDeg = (xDeg < 0) ? xDeg + 360 : xDeg;
+			glRotatef(xDeg, 1, 0, 0);
 
-			float yTan = cross_t.x / cross_t.z;
-			if (cross_t.z == 0.0f&&signbit(cross_t.z))
+			//roll
+			float zDeg = radiansToDegrees(-atan2(co.x, co.y));
+			zDeg = (zDeg < 0) ? zDeg + 360 : zDeg;
+			if (co.x != 0.0)
 			{
-				yTan = INFINITY;
-				glRotatef(90, 0, 1, 0);
+				glRotatef(zDeg, 0, 0, 1);
+			}
+
+
+			//yaw
+			float yDeg = radiansToDegrees(atan2(cross_t.x, cross_t.z));
+			yDeg = (yDeg < 0) ? yDeg + 360 : yDeg;
+			if (cross_t.z == 0.0f&&abs(co.x) == 1)
+			{
+				yDeg = 0;
+			}
+			else if (cross_t.z != 0.0f&&abs(co.x) == 1)
+			{
+				yDeg = radiansToDegrees(atan2(cross_t.y, cross_t.z));
+				yDeg = (yDeg < 0) ? yDeg + 360 : yDeg;
+				if (signbit(co.x))
+				{
+					glRotatef(yDeg + 90, 0, 1, 0);
+				}
+				else
+				{
+					glRotatef(-yDeg + 90, 0, 1, 0);
+				}
+			}
+			else if (cross_t.z == 0.0f && !abs(co.x) == 1 && (yDeg == 90 || yDeg == 270))
+			{
+				yDeg = radiansToDegrees(atan2(cross_t.x, cross_t.y));
+				yDeg = (yDeg < 0) ? yDeg + 360 : yDeg;
+				if (signbit(co.z))
+				{
+					glRotatef(yDeg + 90, 0, 1, 0);
+				}
+				else
+				{
+					glRotatef(-yDeg + 90, 0, 1, 0);
+				}
 			}
 			else
 			{
-				glRotatef(radiansToDegrees(atan(yTan)) + 90 + ((cross_t.x < 0) ? 180 : 0), 0, 1, 0);
+				if (co.y >= 0.0)
+				{
+					glRotatef(yDeg + 90, 0, 1, 0);
+				}
+				else
+				{
+					glRotatef(-yDeg + 270, 0, 1, 0);
+				}
 			}
 
 			glBegin(GL_QUADS);
@@ -611,6 +709,7 @@ void TrainView::drawStuff(bool doingShadows)
 
 			pv = cv;
 		}
+		//break;
 	}
 
 
@@ -714,9 +813,11 @@ void TrainView::getPos(const float t, Pnt3f & pos, Pnt3f & dir, Pnt3f& up)
 
 		pos = qt;
 		dir = (p1.pos - p0.pos);
-		//dir.normalize();
+
 
 		up = orient_t;
+		up.normalize();
+		dir.normalize();
 	}
 	else if (this->tw->splineBrowser->selected(2))
 	{
@@ -782,6 +883,9 @@ void TrainView::getPos(const float t, Pnt3f & pos, Pnt3f & dir, Pnt3f& up)
 		dir.x = dQt.x;
 		dir.y = dQt.y;
 		dir.z = dQt.z;
+
+		up.normalize();
+		dir.normalize();
 	}
 
 	else if (this->tw->splineBrowser->selected(3))
@@ -841,12 +945,15 @@ void TrainView::getPos(const float t, Pnt3f & pos, Pnt3f & dir, Pnt3f& up)
 		up.x = Ot.x;
 		up.y = Ot.y;
 		up.z = Ot.z;
-		
+
 		float dTv[4] = { 3 * percent*percent,2 * percent,1,0 };
 		glm::vec4 dT = glm::make_vec4(dTv);
 		glm::vec3 dQt = G * M*dT;
 		dir.x = dQt.x;
 		dir.y = dQt.y;
 		dir.z = dQt.z;
+
+		up.normalize();
+		dir.normalize();
 	}
 }

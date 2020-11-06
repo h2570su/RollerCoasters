@@ -399,82 +399,20 @@ void TrainView::drawStuff(bool doingShadows)
 	glPushMatrix();
 	glTranslatef(pos.x, pos.y, pos.z);
 
-	////pitch
-	//float xTan = up.z / up.y;
-	//glRotatef(radiansToDegrees(atan(xTan)) + (up.y < 0 ? 180 : 0), 1, 0, 0);
-	////roll
-	//float zTan = up.x / up.y;
-	//glRotatef(radiansToDegrees(-atan(zTan)) + (up.y < 0 ? 180 : 0), 0, 0, 1);
+	Pnt3f u = dir;
 
+	Pnt3f w = u * up;
+	w.normalize();
+	Pnt3f v = w * u;
+	v.normalize();
 
-	////yaw
-	//float yTan = dir.x / dir.z;
-	//glRotatef(radiansToDegrees(atan(yTan)) + ((dir.z < 0) ? 180 : 0), 0, 1, 0);
-	////pitch
-	//float xyTan = dir.y / sqrt(dir.x*dir.x + dir.z*dir.z);
-	//glRotatef(radiansToDegrees(-atan(xyTan)), 1, 0, 0);
-
-	//pitch
-	float xDeg = radiansToDegrees(atan2(up.z, up.y));
-	xDeg = (xDeg < 0) ? xDeg + 360 : xDeg;
-	glRotatef(xDeg, 1, 0, 0);
-
-	//roll
-	float zDeg = radiansToDegrees(-atan2(up.x, up.y));
-	zDeg = (zDeg < 0) ? zDeg + 360 : zDeg;
-	if (up.x != 0.0)
-	{
-		glRotatef(zDeg, 0, 0, 1);
-	}
-
-	//yaw
-	float yDeg = radiansToDegrees(atan2(dir.x, dir.z));
-	yDeg = (yDeg < 0) ? yDeg + 360 : yDeg;
-	if (dir.x == 0.0f&&dir.z == 0.0f&&abs(up.x) == 1)
-	{
-		yDeg = 0;
-	}
-	else if (dir.z != 0.0f&&abs(up.x) == 1)
-	{
-		yDeg = radiansToDegrees(atan2(dir.y, dir.z));
-		yDeg = (yDeg < 0) ? yDeg + 360 : yDeg;
-		if (signbit(up.x))
-		{
-			glRotatef(yDeg, 0, 1, 0);
-		}
-		else
-		{
-			glRotatef(-yDeg, 0, 1, 0);
-		}
-	}
-	else if (dir.z == 0.0f && !abs(up.x) == 1 && (yDeg == 90 || yDeg == 270))
-	{
-		yDeg = radiansToDegrees(atan2(dir.x, dir.y));
-		yDeg = (yDeg < 0) ? yDeg + 360 : yDeg;
-		if (signbit(up.z))
-		{
-			glRotatef(yDeg, 0, 1, 0);
-		}
-		else
-		{
-			glRotatef(-yDeg, 0, 1, 0);
-		}
-	}
-	else
-	{
-		if (up.y >= 0.0)
-		{
-			glRotatef(yDeg, 0, 1, 0);
-		}
-		else
-		{
-			glRotatef(-yDeg + 180, 0, 1, 0);
-		}
-	}
-	//pitch
-		float xyTan = dir.y / sqrt(dir.x*dir.x + dir.z*dir.z);
-		glRotatef(radiansToDegrees(-atan(xyTan)), 1, 0, 0);
-
+	float rotation[16] = {
+	u.x, u.y, u.z, 0.0,
+	v.x, v.y, v.z, 0.0,
+	w.x, w.y, w.z, 0.0,
+	0.0, 0.0, 0.0, 1.0 };
+	glMultMatrixf(rotation);
+	glRotatef(90, 0, 1, 0);
 	glTranslatef(0, trainHeight / 2, 0);
 
 #pragma region trainCar
@@ -593,64 +531,20 @@ void TrainView::drawStuff(bool doingShadows)
 			glPushMatrix();
 			glTranslatef(cv.x, cv.y, cv.z);
 
-			//pitch
-			float xDeg = radiansToDegrees(atan2(co.z, co.y));
-			xDeg = (xDeg < 0) ? xDeg + 360 : xDeg;
-			glRotatef(xDeg, 1, 0, 0);
+			Pnt3f u = dir;
 
-			//roll
-			float zDeg = radiansToDegrees(-atan2(co.x, co.y));
-			zDeg = (zDeg < 0) ? zDeg + 360 : zDeg;
-			if (co.x != 0.0)
-			{
-				glRotatef(zDeg, 0, 0, 1);
-			}
+			Pnt3f w = u * up;
+			w.normalize();
+			Pnt3f v = w * u;
+			v.normalize();
 
-
-			//yaw
-			float yDeg = radiansToDegrees(atan2(cross_t.x, cross_t.z));
-			yDeg = (yDeg < 0) ? yDeg + 360 : yDeg;
-			if (cross_t.z == 0.0f&&abs(co.x) == 1)
-			{
-				yDeg = 0;
-			}
-			else if (cross_t.z != 0.0f&&abs(co.x) == 1)
-			{
-				yDeg = radiansToDegrees(atan2(cross_t.y, cross_t.z));
-				yDeg = (yDeg < 0) ? yDeg + 360 : yDeg;
-				if (signbit(co.x))
-				{
-					glRotatef(yDeg + 90, 0, 1, 0);
-				}
-				else
-				{
-					glRotatef(-yDeg + 90, 0, 1, 0);
-				}
-			}
-			else if (cross_t.z == 0.0f && !abs(co.x) == 1 && (yDeg == 90 || yDeg == 270))
-			{
-				yDeg = radiansToDegrees(atan2(cross_t.x, cross_t.y));
-				yDeg = (yDeg < 0) ? yDeg + 360 : yDeg;
-				if (signbit(co.z))
-				{
-					glRotatef(yDeg + 90, 0, 1, 0);
-				}
-				else
-				{
-					glRotatef(-yDeg + 90, 0, 1, 0);
-				}
-			}
-			else
-			{
-				if (co.y >= 0.0)
-				{
-					glRotatef(yDeg + 90, 0, 1, 0);
-				}
-				else
-				{
-					glRotatef(-yDeg + 270, 0, 1, 0);
-				}
-			}
+			float rotation[16] = {
+			u.x, u.y, u.z, 0.0,
+			v.x, v.y, v.z, 0.0,
+			w.x, w.y, w.z, 0.0,
+			0.0, 0.0, 0.0, 1.0 };
+			glMultMatrixf(rotation);
+			glRotatef(90, 0, 1, 0);
 
 			glBegin(GL_QUADS);
 			if (!doingShadows)

@@ -221,6 +221,7 @@ void TrainView::draw()
 	//######################################################################
 	// enable the lighting
 	glEnable(GL_COLOR_MATERIAL);
+	glShadeModel(GL_SMOOTH);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
@@ -258,6 +259,20 @@ void TrainView::draw()
 	glLightfv(GL_LIGHT2, GL_POSITION, lightPosition3);
 	glLightfv(GL_LIGHT2, GL_DIFFUSE, blueLight);
 
+	GLfloat noLight[] = { 0,0,0,1 };
+	GLfloat lightPos1[] = { 0,200,0,1 };
+	GLfloat lightColor1[] = { 0.2,0.2,0,1 };
+	glEnable(GL_LIGHT3);
+	glLightfv(GL_LIGHT3, GL_POSITION, lightPos1);
+	glLightfv(GL_LIGHT3, GL_AMBIENT, lightColor1);
+	glLightfv(GL_LIGHT3, GL_DIFFUSE, lightColor1);
+	glLightfv(GL_LIGHT3, GL_SPECULAR, noLight);
+
+	GLfloat spotDir[] = { 0,-1,0 };
+	glLightfv(GL_LIGHT3, GL_SPOT_DIRECTION, spotDir);
+	glLightf(GL_LIGHT3, GL_SPOT_CUTOFF, 15);
+	glLightf(GL_LIGHT3, GL_SPOT_EXPONENT, 15.0f);
+
 
 
 	//*********************************************************************
@@ -267,7 +282,7 @@ void TrainView::draw()
 	glUseProgram(0);
 
 	setupFloor();
-	glDisable(GL_LIGHTING);
+	//glDisable(GL_LIGHTING);
 	drawFloor(200, 10);
 
 
@@ -393,88 +408,90 @@ void TrainView::drawStuff(bool doingShadows)
 
 
 	Pnt3f pos, dir, up;
-	this->getPos(this->tw->m_Track.trainU, pos, dir, up);
+	if (!this->tw->trainCam->value())
+	{
+		this->getPos(this->tw->m_Track.trainU, pos, dir, up);
 
 
-	glPushMatrix();
-	glTranslatef(pos.x, pos.y, pos.z);
+		glPushMatrix();
+		glTranslatef(pos.x, pos.y, pos.z);
 
-	Pnt3f u = dir;
+		Pnt3f u = dir;
 
-	Pnt3f w = u * up;
-	w.normalize();
-	Pnt3f v = w * u;
-	v.normalize();
+		Pnt3f w = u * up;
+		w.normalize();
+		Pnt3f v = w * u;
+		v.normalize();
 
-	float rotation[16] = {
-	u.x, u.y, u.z, 0.0,
-	v.x, v.y, v.z, 0.0,
-	w.x, w.y, w.z, 0.0,
-	0.0, 0.0, 0.0, 1.0 };
-	glMultMatrixf(rotation);
-	glRotatef(90, 0, 1, 0);
-	glTranslatef(0, trainHeight / 2, 0);
+		float rotation[16] = {
+		u.x, u.y, u.z, 0.0,
+		v.x, v.y, v.z, 0.0,
+		w.x, w.y, w.z, 0.0,
+		0.0, 0.0, 0.0, 1.0 };
+		glMultMatrixf(rotation);
+		glRotatef(90, 0, 1, 0);
+		glTranslatef(0, trainHeight / 2, 0);
 
 #pragma region trainCar
-	glBegin(GL_QUADS);
-	if (!doingShadows)
-	{
-		glColor3ub(255, 255, 255);
-	}
+		glBegin(GL_QUADS);
+		if (!doingShadows)
+		{
+			glColor3ub(255, 255, 255);
+		}
 
-	glNormal3f(0, -1, 0);
-	glVertex3f(-trainWidth / 2, -trainHeight / 2, -trainLength / 2);
-	glVertex3f(trainWidth / 2, -trainHeight / 2, -trainLength / 2);
-	glVertex3f(trainWidth / 2, -trainHeight / 2, trainLength / 2);
-	glVertex3f(-trainWidth / 2, -trainHeight / 2, trainLength / 2);
-
-
+		glNormal3f(0, -1, 0);
+		glVertex3f(-trainWidth / 2, -trainHeight / 2, -trainLength / 2);
+		glVertex3f(trainWidth / 2, -trainHeight / 2, -trainLength / 2);
+		glVertex3f(trainWidth / 2, -trainHeight / 2, trainLength / 2);
+		glVertex3f(-trainWidth / 2, -trainHeight / 2, trainLength / 2);
 
 
-	glNormal3f(-1, 0, 0);
-	glVertex3f(-trainWidth / 2, -trainHeight / 2, -trainLength / 2);
-	glVertex3f(-trainWidth / 2, trainHeight / 2, -trainLength / 2);
-	glVertex3f(-trainWidth / 2, trainHeight / 2, trainLength / 2);
-	glVertex3f(-trainWidth / 2, -trainHeight / 2, trainLength / 2);
-
-	glNormal3f(1, 0, 0);
-	glVertex3f(trainWidth / 2, -trainHeight / 2, -trainLength / 2);
-	glVertex3f(trainWidth / 2, trainHeight / 2, -trainLength / 2);
-	glVertex3f(trainWidth / 2, trainHeight / 2, trainLength / 2);
-	glVertex3f(trainWidth / 2, -trainHeight / 2, trainLength / 2);
-
-	glNormal3f(0, 0, -1);
-	glVertex3f(-trainWidth / 2, -trainHeight / 2, -trainLength / 2);
-	glVertex3f(trainWidth / 2, -trainHeight / 2, -trainLength / 2);
-	glVertex3f(trainWidth / 2, trainHeight / 2, -trainLength / 2);
-	glVertex3f(-trainWidth / 2, trainHeight / 2, -trainLength / 2);
-	if (!doingShadows)
-	{
-		glColor3ub(255, 255, 0);
-	}
-
-	glNormal3f(0, 1, 0);
-	glVertex3f(-trainWidth / 2, trainHeight / 2, -trainLength / 2);
-	glVertex3f(trainWidth / 2, trainHeight / 2, -trainLength / 2);
-	glVertex3f(trainWidth / 2, trainHeight / 2, trainLength / 2);
-	glVertex3f(-trainWidth / 2, trainHeight / 2, trainLength / 2);
-
-	if (!doingShadows)
-	{
-		glColor3ub(255, 0, 0);
-	}
-	glNormal3f(0, 0, 1);
-	glVertex3f(-trainWidth / 2, -trainHeight / 2, trainLength / 2);
-	glVertex3f(trainWidth / 2, -trainHeight / 2, trainLength / 2);
-	glVertex3f(trainWidth / 2, trainHeight / 2, trainLength / 2);
-	glVertex3f(-trainWidth / 2, trainHeight / 2, trainLength / 2);
 
 
-	glEnd();
+		glNormal3f(-1, 0, 0);
+		glVertex3f(-trainWidth / 2, -trainHeight / 2, -trainLength / 2);
+		glVertex3f(-trainWidth / 2, trainHeight / 2, -trainLength / 2);
+		glVertex3f(-trainWidth / 2, trainHeight / 2, trainLength / 2);
+		glVertex3f(-trainWidth / 2, -trainHeight / 2, trainLength / 2);
+
+		glNormal3f(1, 0, 0);
+		glVertex3f(trainWidth / 2, -trainHeight / 2, -trainLength / 2);
+		glVertex3f(trainWidth / 2, trainHeight / 2, -trainLength / 2);
+		glVertex3f(trainWidth / 2, trainHeight / 2, trainLength / 2);
+		glVertex3f(trainWidth / 2, -trainHeight / 2, trainLength / 2);
+
+		glNormal3f(0, 0, -1);
+		glVertex3f(-trainWidth / 2, -trainHeight / 2, -trainLength / 2);
+		glVertex3f(trainWidth / 2, -trainHeight / 2, -trainLength / 2);
+		glVertex3f(trainWidth / 2, trainHeight / 2, -trainLength / 2);
+		glVertex3f(-trainWidth / 2, trainHeight / 2, -trainLength / 2);
+		if (!doingShadows)
+		{
+			glColor3ub(255, 255, 0);
+		}
+
+		glNormal3f(0, 1, 0);
+		glVertex3f(-trainWidth / 2, trainHeight / 2, -trainLength / 2);
+		glVertex3f(trainWidth / 2, trainHeight / 2, -trainLength / 2);
+		glVertex3f(trainWidth / 2, trainHeight / 2, trainLength / 2);
+		glVertex3f(-trainWidth / 2, trainHeight / 2, trainLength / 2);
+
+		if (!doingShadows)
+		{
+			glColor3ub(255, 0, 0);
+		}
+		glNormal3f(0, 0, 1);
+		glVertex3f(-trainWidth / 2, -trainHeight / 2, trainLength / 2);
+		glVertex3f(trainWidth / 2, -trainHeight / 2, trainLength / 2);
+		glVertex3f(trainWidth / 2, trainHeight / 2, trainLength / 2);
+		glVertex3f(-trainWidth / 2, trainHeight / 2, trainLength / 2);
+
+
+		glEnd();
 #pragma endregion
-	glPopMatrix();
+		glPopMatrix();
 
-
+	}
 
 	// draw the track
 	//####################################################################

@@ -493,7 +493,7 @@ void TrainView::drawStuff(bool doingShadows)
 				cross_t = cross_t * 2.5f;
 
 				//Track Lines
-				//drawTrack(pv, cv, cross_t, doingShadows);
+
 				lines.push_back(TrackNeeds{ pv,cv,cross_t });
 
 				//Track Bars
@@ -501,8 +501,8 @@ void TrainView::drawStuff(bool doingShadows)
 				{
 					distSum = 0;
 					getDir(t, dir, type);
-					//drawBar(cv, dir, up, doingShadows);
-					bars.push_back(BarNeeds{ cv, dir,up });
+
+					bars.push_back(BarNeeds{ cv, dir,co });
 				}
 				pv = cv;
 			}
@@ -560,7 +560,7 @@ void TrainView::drawStuff(bool doingShadows)
 				{
 					distSum = 0;
 					getDir(t, dir, type);
-					drawBar(cv, dir, up, doingShadows);
+					drawBar(cv, dir, co, doingShadows);
 				}
 				pv = cv;
 			}

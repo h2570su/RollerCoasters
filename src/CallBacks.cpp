@@ -46,9 +46,19 @@ void resetCB(Fl_Widget*, TrainWindow* tw)
 	tw->m_Track.resetPoints();
 	tw->trainView->selectedCube = -1;
 	tw->m_Track.trainU = 0;
-	tw->damageMe();
+	
 	tw->trainView->currTrainSpeed = tw->trainView->defaultSpeed;
 	
+	tw->trainView->cartsCount = 5;
+
+
+	std::string str("Carts: " + std::to_string(tw->trainView->cartsCount));
+	strcpy_s(tw->currentCartCountStr, str.c_str());
+	tw->CartCount->label(tw->currentCartCountStr);	
+	tw->CartCount->redraw();
+
+	tw->damageMe();
+	tw->widgets->damage(1);
 }
 
 //***************************************************************************

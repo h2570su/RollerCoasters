@@ -525,7 +525,7 @@ void TrainView::drawStuff(bool doingShadows)
 	}
 	else
 	{
-		for (int i = 0; i<this->m_pTrack->points.size();i++)
+		for (int i = 0; i < this->m_pTrack->points.size(); i++)
 		{
 			Pnt3f pos, dir, up;
 			float t = i;
@@ -596,7 +596,7 @@ void TrainView::drawBar(Pnt3f pos, Pnt3f dir, Pnt3f up, bool doingShadows)
 
 	glPushMatrix();
 	glTranslatef(cv.x, cv.y, cv.z);
-	
+
 
 	Pnt3f u = dir;
 
@@ -855,10 +855,10 @@ void TrainView::getPos(float t, Pnt3f & pos, int type)
 		const ControlPoint *p0, *p1, *p2, *p3;
 		int i = floor(t);
 		float percent = t - i;
-		p0 = &this->m_pTrack->points[i];
-		p1 = &this->m_pTrack->points[(i + 1) % this->m_pTrack->points.size()];
-		p2 = &this->m_pTrack->points[(i + 2) % this->m_pTrack->points.size()];
-		p3 = &this->m_pTrack->points[(i + 3) % this->m_pTrack->points.size()];
+		p0 = &this->m_pTrack->points[(i == 0) ? this->m_pTrack->points.size() - 1 : i - 1];
+		p1 = &this->m_pTrack->points[(i)];
+		p2 = &this->m_pTrack->points[(i + 1) % this->m_pTrack->points.size()];
+		p3 = &this->m_pTrack->points[(i + 2) % this->m_pTrack->points.size()];
 
 		float Gmat[12] =
 		{
@@ -885,10 +885,10 @@ void TrainView::getPos(float t, Pnt3f & pos, int type)
 		const ControlPoint *p0, *p1, *p2, *p3;
 		int i = floor(t);
 		float percent = t - i;
-		p0 = &this->m_pTrack->points[i];
-		p1 = &this->m_pTrack->points[(i + 1) % this->m_pTrack->points.size()];
-		p2 = &this->m_pTrack->points[(i + 2) % this->m_pTrack->points.size()];
-		p3 = &this->m_pTrack->points[(i + 3) % this->m_pTrack->points.size()];
+		p0 = &this->m_pTrack->points[(i == 0) ? this->m_pTrack->points.size() - 1 : i - 1];
+		p1 = &this->m_pTrack->points[(i)];
+		p2 = &this->m_pTrack->points[(i + 1) % this->m_pTrack->points.size()];
+		p3 = &this->m_pTrack->points[(i + 2) % this->m_pTrack->points.size()];
 
 		float Gmat[12] =
 		{
@@ -937,10 +937,10 @@ void TrainView::getDir(float t, Pnt3f & dir, int type)
 		const ControlPoint *p0, *p1, *p2, *p3;
 		int i = floor(t);
 		float percent = t - i;
-		p0 = &this->m_pTrack->points[i];
-		p1 = &this->m_pTrack->points[(i + 1) % this->m_pTrack->points.size()];
-		p2 = &this->m_pTrack->points[(i + 2) % this->m_pTrack->points.size()];
-		p3 = &this->m_pTrack->points[(i + 3) % this->m_pTrack->points.size()];
+		p0 = &this->m_pTrack->points[(i == 0) ? this->m_pTrack->points.size() - 1 : i - 1];
+		p1 = &this->m_pTrack->points[(i)];
+		p2 = &this->m_pTrack->points[(i + 1) % this->m_pTrack->points.size()];
+		p3 = &this->m_pTrack->points[(i + 2) % this->m_pTrack->points.size()];
 
 
 		float Gmat[12] =
@@ -970,10 +970,10 @@ void TrainView::getDir(float t, Pnt3f & dir, int type)
 		const ControlPoint *p0, *p1, *p2, *p3;
 		int i = floor(t);
 		float percent = t - i;
-		p0 = &this->m_pTrack->points[i];
-		p1 = &this->m_pTrack->points[(i + 1) % this->m_pTrack->points.size()];
-		p2 = &this->m_pTrack->points[(i + 2) % this->m_pTrack->points.size()];
-		p3 = &this->m_pTrack->points[(i + 3) % this->m_pTrack->points.size()];
+		p0 = &this->m_pTrack->points[(i == 0) ? this->m_pTrack->points.size() - 1 : i - 1];
+		p1 = &this->m_pTrack->points[(i)];
+		p2 = &this->m_pTrack->points[(i + 1) % this->m_pTrack->points.size()];
+		p3 = &this->m_pTrack->points[(i + 2) % this->m_pTrack->points.size()];
 
 		float Gmat[12] =
 		{
@@ -1029,10 +1029,10 @@ void TrainView::getOrient(float t, Pnt3f& up, int type)
 		const ControlPoint *p0, *p1, *p2, *p3;
 		int i = floor(t);
 		float percent = t - i;
-		p0 = &this->m_pTrack->points[i];
-		p1 = &this->m_pTrack->points[(i + 1) % this->m_pTrack->points.size()];
-		p2 = &this->m_pTrack->points[(i + 2) % this->m_pTrack->points.size()];
-		p3 = &this->m_pTrack->points[(i + 3) % this->m_pTrack->points.size()];
+		p0 = &this->m_pTrack->points[(i == 0) ? this->m_pTrack->points.size() - 1 : i - 1];
+		p1 = &this->m_pTrack->points[(i)];
+		p2 = &this->m_pTrack->points[(i + 1) % this->m_pTrack->points.size()];
+		p3 = &this->m_pTrack->points[(i + 2) % this->m_pTrack->points.size()];
 
 
 		float Tv[4] = { percent*percent*percent,percent*percent,percent,1 };
@@ -1061,10 +1061,10 @@ void TrainView::getOrient(float t, Pnt3f& up, int type)
 		const ControlPoint *p0, *p1, *p2, *p3;
 		int i = floor(t);
 		float percent = t - i;
-		p0 = &this->m_pTrack->points[i];
-		p1 = &this->m_pTrack->points[(i + 1) % this->m_pTrack->points.size()];
-		p2 = &this->m_pTrack->points[(i + 2) % this->m_pTrack->points.size()];
-		p3 = &this->m_pTrack->points[(i + 3) % this->m_pTrack->points.size()];
+		p0 = &this->m_pTrack->points[(i == 0) ? this->m_pTrack->points.size() - 1 : i - 1];
+		p1 = &this->m_pTrack->points[(i)];
+		p2 = &this->m_pTrack->points[(i + 1) % this->m_pTrack->points.size()];
+		p3 = &this->m_pTrack->points[(i + 2) % this->m_pTrack->points.size()];
 
 
 		float Tv[4] = { percent*percent*percent,percent*percent,percent,1 };

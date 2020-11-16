@@ -52,7 +52,9 @@ class CTrack;
 #include "Utilities/ArcBallCam.H"
 
 #include "Utilities/Pnt3f.H"
-
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <vector>
 class TrainView : public Fl_Gl_Window
 {
 public:
@@ -68,6 +70,10 @@ public:
 	// we're drawing shadows (no colors, for example)
 	void drawStuff(bool doingShadows = false);
 
+	void drawTrack(Pnt3f pv, Pnt3f cv, Pnt3f cross_t, bool doingShadows);
+	void drawBar(Pnt3f pos, Pnt3f dir, Pnt3f up, bool doingShadows);
+	void drawCarts(float t, bool doingShadows);
+
 	// setup the projection - assuming that the projection stack has been
 	// cleared for you
 	void setProjection();
@@ -78,7 +84,9 @@ public:
 	// pick a point (for when the mouse goes down)
 	void doPick();
 
-	void getPos(const float t, Pnt3f& pos, Pnt3f& dir, Pnt3f& up);
+	void getPos( float t, Pnt3f& pos, int type);
+	void getDir( float t, Pnt3f& dir, int type);
+	void getOrient( float t, Pnt3f& up, int type);
 
 public:
 	ArcBallCam		arcball;			// keep an ArcBall for the UI
@@ -86,8 +94,51 @@ public:
 
 	TrainWindow*	tw;				// The parent of this display window
 	CTrack*			m_pTrack;		// The track of the entire scene
+	struct BarNeeds
+	{
+		Pnt3f pos;
+		Pnt3f dir;
+		Pnt3f up;
+	};
+	struct TrackNeeds
+	{
+		Pnt3f pv;
+		Pnt3f cv;
+		Pnt3f cross_t;
+	};
+	std::vector<BarNeeds> barDrawList;
+	std::vector<TrackNeeds> trackDrawList;
 
-	float trainWidth = 8;
-	float trainHeight = 6;
-	float trainLength = 15;
+	int cartsCount = 5;
+	const float cartsSpacing = 17;
+
+	const float defaultSpeed = 75;
+	const float maxSpeed = defaultSpeed*4;	
+	const float minSpeed = defaultSpeed/2;
+	float currTrainSpeed = defaultSpeed;
+	const float gravityFactor = 9.8/2;
+	
+
+	const float trainWidth = 8;
+	const float trainHeight = 6;
+	const float trainLength = 15;
+	const int DIVIDE_LINE = 1000;
+	const float barSpacing = 7.5;
+
+	const float B_SplineMmat[16] =
+	{
+		-1 / 6.0,3 / 6.0,-3 / 6.0,1 / 6.0,
+		3 / 6.0,-6 / 6.0,3 / 6.0,0 / 6.0,
+		-3 / 6.0,0 / 6.0,3 / 6.0,0 / 6.0,
+		1 / 6.0,4 / 6.0,1 / 6.0,0 / 6.0
+	};
+	const glm::mat4  B_SplineM = glm::make_mat4(B_SplineMmat);
+	const float CarrientalMmat[16] =
+	{
+		-1 / 2.0 ,3 / 2.0 ,-3 / 2.0  ,1 / 2.0,
+		2 / 2.0  ,-5 / 2.0,4 / 2.0   ,-1 / 2.0,
+		-1 / 2.0 ,0 / 2.0 ,1 / 2.0   ,0 / 2.0,
+		0 / 2.0  ,2 / 2.0 ,0 / 2.0   ,0 / 2.0
+	};
+	const glm::mat4  CarrientalM = glm::make_mat4(CarrientalMmat);
 };

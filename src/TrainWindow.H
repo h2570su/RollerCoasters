@@ -32,6 +32,7 @@
 #include <Fl/Fl_Double_Window.h>
 #include <Fl/Fl_Button.h>
 #include <Fl/Fl_Group.H>
+#include <FL/Fl_Box.H>
 #include <Fl/Fl_Value_Slider.H>
 #include <Fl/Fl_Browser.H>
 #pragma warning(pop)
@@ -88,11 +89,16 @@ class TrainWindow : public Fl_Double_Window {
 		Fl_Button*			runButton;
 		// if we're animating it, how fast should it go?
 		Fl_Value_Slider*	speed;
-		Fl_Button*			arcLength;		// do we use arc length for speed?
+		Fl_Button*			arcLength;		// do we use arc length for speed? 
+		
+		Fl_Button*          physics;		
+		Fl_Button*          incCart;
+		Fl_Button*          decCart;
+		Fl_Box*             CartCount;
+		Fl_Box*             currentSpeed;
+		char                currentSpeedStr[100] = { 0 };
+		char                currentCartCountStr[100] = { 0 };
+		Fl_Button*          multiThread;
 
-		// we have other widgets as part of the sample solution
-		// this is not for 559 students to know about
-#ifdef EXAMPLE_SOLUTION
-	ExampleWidgets ew;
-#endif
+
 };

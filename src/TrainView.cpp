@@ -39,8 +39,8 @@
 #include "TrainWindow.H"
 #include "Utilities/3DUtils.H"
 #include <algorithm>
-
-
+#include <ppl.h>
+#include <mutex>
 
 #ifdef EXAMPLE_SOLUTION
 #	include "TrainExample/TrainExample.H"
@@ -244,7 +244,7 @@ void TrainView::draw()
 	GLfloat lightPosition1[] = { 0,1,1,0 }; // {50, 200.0, 50, 1.0};
 	GLfloat lightPosition2[] = { 1, 0, 0, 0 };
 	GLfloat lightPosition3[] = { 0, -1, 0, 0 };
-	GLfloat yellowLight[] = { 0.5f, 0.5f, .1f, 1.0 };
+	GLfloat yellowLight[] = { 0.0f, 0.0f, .8f, 1.0 };
 	GLfloat whiteLight[] = { 1.0f, 1.0f, 1.0f, 1.0 };
 	GLfloat blueLight[] = { .1f,.1f,.3f,1.0 };
 	GLfloat grayLight[] = { .3f, .3f, .3f, 1.0 };
@@ -261,7 +261,7 @@ void TrainView::draw()
 
 	GLfloat noLight[] = { 0,0,0,1 };
 	GLfloat lightPos1[] = { 0,200,0,1 };
-	GLfloat lightColor1[] = { 0.2,0.2,0,1 };
+	GLfloat lightColor1[] = { 0,0.2,0,1 };
 	glEnable(GL_LIGHT3);
 	glLightfv(GL_LIGHT3, GL_POSITION, lightPos1);
 	glLightfv(GL_LIGHT3, GL_AMBIENT, lightColor1);
@@ -270,7 +270,7 @@ void TrainView::draw()
 
 	GLfloat spotDir[] = { 0,-1,0 };
 	glLightfv(GL_LIGHT3, GL_SPOT_DIRECTION, spotDir);
-	glLightf(GL_LIGHT3, GL_SPOT_CUTOFF, 15);
+	glLightf(GL_LIGHT3, GL_SPOT_CUTOFF, 30);
 	glLightf(GL_LIGHT3, GL_SPOT_EXPONENT, 15.0f);
 
 
@@ -349,7 +349,13 @@ setProjection()
 	else {
 		//arcball.setup(this, 40, 250, .2f, .4f, 0);
 		Pnt3f pos, dir, up;
-		this->getPos(this->tw->m_Track.trainU, pos, dir, up);
+		int type = 0;
+		type = (this->tw->splineBrowser->selected(1)) ? 1 : type;
+		type = (this->tw->splineBrowser->selected(2)) ? 2 : type;
+		type = (this->tw->splineBrowser->selected(3)) ? 3 : type;
+		this->getPos(this->tw->m_Track.trainU, pos, type);
+		this->getDir(this->tw->m_Track.trainU, dir, type);
+		this->getOrient(this->tw->m_Track.trainU, up, type);
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -406,225 +412,352 @@ void TrainView::drawStuff(bool doingShadows)
 	//	call your own train drawing code
 	//####################################################################
 
-
-	Pnt3f pos, dir, up;
+	int type = 0;
+	type = (this->tw->splineBrowser->selected(1)) ? 1 : type;
+	type = (this->tw->splineBrowser->selected(2)) ? 2 : type;
+	type = (this->tw->splineBrowser->selected(3)) ? 3 : type;
 	if (!this->tw->trainCam->value())
 	{
-		this->getPos(this->tw->m_Track.trainU, pos, dir, up);
-
-
-		glPushMatrix();
-		glTranslatef(pos.x, pos.y, pos.z);
-
-		Pnt3f u = dir;
-
-		Pnt3f w = u * up;
-		w.normalize();
-		Pnt3f v = w * u;
-		v.normalize();
-
-		float rotation[16] = {
-		u.x, u.y, u.z, 0.0,
-		v.x, v.y, v.z, 0.0,
-		w.x, w.y, w.z, 0.0,
-		0.0, 0.0, 0.0, 1.0 };
-		glMultMatrixf(rotation);
-		glRotatef(90, 0, 1, 0);
-		glTranslatef(0, trainHeight / 2, 0);
-
-#pragma region trainCar
-		glBegin(GL_QUADS);
-		if (!doingShadows)
-		{
-			glColor3ub(255, 255, 255);
-		}
-
-		glNormal3f(0, -1, 0);
-		glVertex3f(-trainWidth / 2, -trainHeight / 2, -trainLength / 2);
-		glVertex3f(trainWidth / 2, -trainHeight / 2, -trainLength / 2);
-		glVertex3f(trainWidth / 2, -trainHeight / 2, trainLength / 2);
-		glVertex3f(-trainWidth / 2, -trainHeight / 2, trainLength / 2);
-
-
-
-
-		glNormal3f(-1, 0, 0);
-		glVertex3f(-trainWidth / 2, -trainHeight / 2, -trainLength / 2);
-		glVertex3f(-trainWidth / 2, trainHeight / 2, -trainLength / 2);
-		glVertex3f(-trainWidth / 2, trainHeight / 2, trainLength / 2);
-		glVertex3f(-trainWidth / 2, -trainHeight / 2, trainLength / 2);
-
-		glNormal3f(1, 0, 0);
-		glVertex3f(trainWidth / 2, -trainHeight / 2, -trainLength / 2);
-		glVertex3f(trainWidth / 2, trainHeight / 2, -trainLength / 2);
-		glVertex3f(trainWidth / 2, trainHeight / 2, trainLength / 2);
-		glVertex3f(trainWidth / 2, -trainHeight / 2, trainLength / 2);
-
-		glNormal3f(0, 0, -1);
-		glVertex3f(-trainWidth / 2, -trainHeight / 2, -trainLength / 2);
-		glVertex3f(trainWidth / 2, -trainHeight / 2, -trainLength / 2);
-		glVertex3f(trainWidth / 2, trainHeight / 2, -trainLength / 2);
-		glVertex3f(-trainWidth / 2, trainHeight / 2, -trainLength / 2);
-		if (!doingShadows)
-		{
-			glColor3ub(255, 255, 0);
-		}
-
-		glNormal3f(0, 1, 0);
-		glVertex3f(-trainWidth / 2, trainHeight / 2, -trainLength / 2);
-		glVertex3f(trainWidth / 2, trainHeight / 2, -trainLength / 2);
-		glVertex3f(trainWidth / 2, trainHeight / 2, trainLength / 2);
-		glVertex3f(-trainWidth / 2, trainHeight / 2, trainLength / 2);
-
-		if (!doingShadows)
-		{
-			glColor3ub(255, 0, 0);
-		}
-		glNormal3f(0, 0, 1);
-		glVertex3f(-trainWidth / 2, -trainHeight / 2, trainLength / 2);
-		glVertex3f(trainWidth / 2, -trainHeight / 2, trainLength / 2);
-		glVertex3f(trainWidth / 2, trainHeight / 2, trainLength / 2);
-		glVertex3f(-trainWidth / 2, trainHeight / 2, trainLength / 2);
-
-
-		glEnd();
-#pragma endregion
-		glPopMatrix();
-
+		this->drawCarts(this->m_pTrack->trainU, doingShadows);
 	}
+	if (this->cartsCount > 0)
+	{
+		double currCartT = this->m_pTrack->trainU;
+
+		for (int c = 0; c < this->cartsCount; c++)
+		{
+			double cartMoveSum = 0;
+			Pnt3f pv;
+
+
+			this->getPos(currCartT, pv, type);
+			double incT = -1.0 / (this->DIVIDE_LINE);
+			for (int i = 0; i < this->DIVIDE_LINE; i++)
+			{
+				if (cartMoveSum >= this->cartsSpacing)
+				{
+					break;
+				}
+				Pnt3f cv;
+				currCartT += incT;
+				this->getPos(currCartT, cv, type);
+				cartMoveSum += sqrt((cv.x - pv.x)*(cv.x - pv.x) + (cv.y - pv.y)*(cv.y - pv.y) + (cv.z - pv.z)*(cv.z - pv.z));
+				pv = cv;
+			}
+			this->drawCarts(currCartT, doingShadows);
+		}
+	}
+
+
 
 	// draw the track
 	//####################################################################
 	// TODO: 
 	// call your own track drawing code
 	//####################################################################
+	this->trackDrawList.clear();
+	this->barDrawList.clear();
 
-
-	int DIVIDE_LINE = 10;
-
-	float t = 0.0;
-	//Pnt3f pos, dir, up;
-	getPos(t, pos, dir, up);
-	Pnt3f pv = pos;
-	Pnt3f po = up;
-	for (int i = t; i < this->m_pTrack->points.size(); i++)
+	bool arcLengthEnabled = this->tw->arcLength->value();
+	if (this->tw->multiThread->value())
 	{
-		for (int j = 0; j < DIVIDE_LINE; j++)
+		std::mutex g_mutex;
+		Concurrency::parallel_for(size_t(0), this->m_pTrack->points.size(), [&](size_t i)
 		{
-			t += 1.0 / DIVIDE_LINE;
-			getPos(t, pos, dir, up);
-			Pnt3f cv = pos;
-			Pnt3f co = up;
+			std::vector<BarNeeds> bars;
+			std::vector<TrackNeeds> lines;
+			lines.reserve(DIVIDE_LINE * 6);
+			Pnt3f pos, dir, up;
+			float t = i;
 
-			Pnt3f cross_t = (cv - pv) * co;
-			cross_t.normalize();
-			cross_t = cross_t * 2.5f;
-
-#pragma region TrackLines
-			glLineWidth(3);
-			if (!doingShadows)
+			this->getPos(t, pos, type);
+			this->getOrient(t, up, type);
+			Pnt3f pv = pos;
+			Pnt3f po = up;
+			float distSum = 0;
+			for (int j = 0; j < DIVIDE_LINE; j++)
 			{
+				t += 1.0 / DIVIDE_LINE;
+				Pnt3f cv;
+				Pnt3f co;
+				this->getPos(t, cv, type);
+				this->getOrient(t, co, type);
 
-				glColor3ub(32, 32, 64);
+				if (arcLengthEnabled)
+				{
+					distSum += sqrt((cv.x - pv.x)*(cv.x - pv.x) + (cv.y - pv.y)*(cv.y - pv.y) + (cv.z - pv.z)*(cv.z - pv.z));
+				}
+
+				Pnt3f cross_t = (cv - pv) * co;
+				cross_t.normalize();
+				cross_t = cross_t * 2.5f;
+
+				//Track Lines
+				//drawTrack(pv, cv, cross_t, doingShadows);
+				lines.push_back(TrackNeeds{ pv,cv,cross_t });
+
+				//Track Bars
+				if ((!arcLengthEnabled && j % (this->DIVIDE_LINE / 10) == 0) || (arcLengthEnabled && distSum >= barSpacing))
+				{
+					distSum = 0;
+					getDir(t, dir, type);
+					//drawBar(cv, dir, up, doingShadows);
+					bars.push_back(BarNeeds{ cv, dir,up });
+				}
+				pv = cv;
 			}
-			glLineWidth(3);
-			glBegin(GL_LINES);
-			glVertex3f(pv.x + cross_t.x, pv.y + cross_t.y, pv.z + cross_t.z);
-			glVertex3f(cv.x + cross_t.x, cv.y + cross_t.y, cv.z + cross_t.z);
-			glVertex3f(pv.x - cross_t.x, pv.y - cross_t.y, pv.z - cross_t.z);
-			glVertex3f(cv.x - cross_t.x, cv.y - cross_t.y, cv.z - cross_t.z);
-			glEnd();
-#pragma endregion
+			g_mutex.lock();
+			this->barDrawList.insert(this->barDrawList.end(), bars.begin(), bars.end());
+			this->trackDrawList.insert(this->trackDrawList.end(), lines.begin(), lines.end());
+			g_mutex.unlock();
 
-#pragma region TrackBars
+		});
 
-			if (!doingShadows)
-				glColor3ub(255, 255, 255);
-			float BarLengthRatio = 3;
-			float BarWidth = 1;
-			float BarHeight = 0.5;
-			float BarLength = sqrt(cross_t.x*cross_t.x + cross_t.y*cross_t.y + cross_t.z*cross_t.z)*BarLengthRatio;
-
-			glPushMatrix();
-			glTranslatef(cv.x, cv.y, cv.z);
-
-			Pnt3f u = dir;
-
-			Pnt3f w = u * up;
-			w.normalize();
-			Pnt3f v = w * u;
-			v.normalize();
-
-			float rotation[16] = {
-			u.x, u.y, u.z, 0.0,
-			v.x, v.y, v.z, 0.0,
-			w.x, w.y, w.z, 0.0,
-			0.0, 0.0, 0.0, 1.0 };
-			glMultMatrixf(rotation);
-			glRotatef(90, 0, 1, 0);
-
-			glBegin(GL_QUADS);
-			if (!doingShadows)
-			{
-				glColor3ub(255, 255, 255);
-			}
-
-			glNormal3f(0, -1, 0);
-			glVertex3f(-BarLength / 2, -BarHeight / 2, -BarWidth / 2);
-			glVertex3f(-BarLength / 2, -BarHeight / 2, BarWidth / 2);
-			glVertex3f(BarLength / 2, -BarHeight / 2, BarWidth / 2);
-			glVertex3f(BarLength / 2, -BarHeight / 2, -BarWidth / 2);
-
-
-			glNormal3f(-1, 0, 0);
-			glVertex3f(-BarLength / 2, BarHeight / 2, -BarWidth / 2);
-			glVertex3f(-BarLength / 2, BarHeight / 2, BarWidth / 2);
-			glVertex3f(-BarLength / 2, -BarHeight / 2, BarWidth / 2);
-			glVertex3f(-BarLength / 2, -BarHeight / 2, -BarWidth / 2);
-
-			glNormal3f(1, 0, 0);
-			glVertex3f(BarLength / 2, BarHeight / 2, -BarWidth / 2);
-			glVertex3f(BarLength / 2, BarHeight / 2, BarWidth / 2);
-			glVertex3f(BarLength / 2, -BarHeight / 2, BarWidth / 2);
-			glVertex3f(BarLength / 2, -BarHeight / 2, -BarWidth / 2);
-
-
-			glNormal3f(0, 0, -1);
-			glVertex3f(-BarLength / 2, -BarHeight / 2, -BarWidth / 2);
-			glVertex3f(-BarLength / 2, BarHeight / 2, -BarWidth / 2);
-			glVertex3f(BarLength / 2, BarHeight / 2, -BarWidth / 2);
-			glVertex3f(BarLength / 2, -BarHeight / 2, -BarWidth / 2);
-
-
-			glNormal3f(0, 0, 1);
-			glVertex3f(-BarLength / 2, -BarHeight / 2, BarWidth / 2);
-			glVertex3f(-BarLength / 2, BarHeight / 2, BarWidth / 2);
-			glVertex3f(BarLength / 2, BarHeight / 2, BarWidth / 2);
-			glVertex3f(BarLength / 2, -BarHeight / 2, BarWidth / 2);
-
-			if (!doingShadows)
-			{
-				glColor3ub(255, 0, 0);
-			}
-
-			glNormal3f(0, 1, 0);
-			glVertex3f(-BarLength / 2, BarHeight / 2, -BarWidth / 2);
-			glVertex3f(-BarLength / 2, BarHeight / 2, BarWidth / 2);
-			glVertex3f(BarLength / 2, BarHeight / 2, BarWidth / 2);
-			glVertex3f(BarLength / 2, BarHeight / 2, -BarWidth / 2);
-
-			glEnd();
-			glPopMatrix();
-
-#pragma endregion
-
-			pv = cv;
+		for (auto& v : this->trackDrawList)
+		{
+			drawTrack(v.pv, v.cv, v.cross_t, doingShadows);
 		}
-		//break;
+
+		for (auto& v : this->barDrawList)
+		{
+			drawBar(v.pos, v.dir, v.up, doingShadows);
+		}
+	}
+	else
+	{
+		for (int i = 0; i<this->m_pTrack->points.size();i++)
+		{
+			Pnt3f pos, dir, up;
+			float t = i;
+
+			this->getPos(t, pos, type);
+			this->getOrient(t, up, type);
+			Pnt3f pv = pos;
+			Pnt3f po = up;
+			float distSum = 0;
+			for (int j = 0; j < DIVIDE_LINE; j++)
+			{
+				t += 1.0 / DIVIDE_LINE;
+				Pnt3f cv;
+				Pnt3f co;
+				this->getPos(t, cv, type);
+				this->getOrient(t, co, type);
+
+				if (arcLengthEnabled)
+				{
+					distSum += sqrt((cv.x - pv.x)*(cv.x - pv.x) + (cv.y - pv.y)*(cv.y - pv.y) + (cv.z - pv.z)*(cv.z - pv.z));
+				}
+
+				Pnt3f cross_t = (cv - pv) * co;
+				cross_t.normalize();
+				cross_t = cross_t * 2.5f;
+
+				//Track Lines
+				drawTrack(pv, cv, cross_t, doingShadows);
+
+				//Track Bars
+				if ((!arcLengthEnabled && j % (this->DIVIDE_LINE / 10) == 0) || (arcLengthEnabled && distSum >= barSpacing))
+				{
+					distSum = 0;
+					getDir(t, dir, type);
+					drawBar(cv, dir, up, doingShadows);
+				}
+				pv = cv;
+			}
+		}
+	}
+}
+
+void TrainView::drawTrack(Pnt3f pv, Pnt3f cv, Pnt3f cross_t, bool doingShadows)
+{
+	if (!doingShadows)
+	{
+
+		glColor3ub(32, 32, 64);
+	}
+	glLineWidth(5);
+	glBegin(GL_LINES);
+	glVertex3f(pv.x + cross_t.x, pv.y + cross_t.y, pv.z + cross_t.z);
+	glVertex3f(cv.x + cross_t.x, cv.y + cross_t.y, cv.z + cross_t.z);
+	glVertex3f(pv.x - cross_t.x, pv.y - cross_t.y, pv.z - cross_t.z);
+	glVertex3f(cv.x - cross_t.x, cv.y - cross_t.y, cv.z - cross_t.z);
+	glEnd();
+}
+
+void TrainView::drawBar(Pnt3f pos, Pnt3f dir, Pnt3f up, bool doingShadows)
+{
+	Pnt3f cv = pos;
+	if (!doingShadows)
+		glColor3ub(255, 255, 255);
+	float BarLengthRatio = 3;
+	float BarWidth = 1;
+	float BarHeight = 0.5;
+	float BarLength = 7.5;
+
+	glPushMatrix();
+	glTranslatef(cv.x, cv.y, cv.z);
+	
+
+	Pnt3f u = dir;
+
+	Pnt3f w = u * up;
+	w.normalize();
+	Pnt3f v = w * u;
+	v.normalize();
+
+	float rotation[16] = {
+	u.x, u.y, u.z, 0.0,
+	v.x, v.y, v.z, 0.0,
+	w.x, w.y, w.z, 0.0,
+	0.0, 0.0, 0.0, 1.0 };
+	glMultMatrixf(rotation);
+	glRotatef(90, 0, 1, 0);
+	glTranslatef(0, -BarHeight, 0);
+	glBegin(GL_QUADS);
+	if (!doingShadows)
+	{
+		glColor3ub(255, 255, 255);
 	}
 
+	glNormal3f(0, -1, 0);
+	glVertex3f(-BarLength / 2, -BarHeight / 2, -BarWidth / 2);
+	glVertex3f(-BarLength / 2, -BarHeight / 2, BarWidth / 2);
+	glVertex3f(BarLength / 2, -BarHeight / 2, BarWidth / 2);
+	glVertex3f(BarLength / 2, -BarHeight / 2, -BarWidth / 2);
 
 
+	glNormal3f(-1, 0, 0);
+	glVertex3f(-BarLength / 2, BarHeight / 2, -BarWidth / 2);
+	glVertex3f(-BarLength / 2, BarHeight / 2, BarWidth / 2);
+	glVertex3f(-BarLength / 2, -BarHeight / 2, BarWidth / 2);
+	glVertex3f(-BarLength / 2, -BarHeight / 2, -BarWidth / 2);
+
+	glNormal3f(1, 0, 0);
+	glVertex3f(BarLength / 2, BarHeight / 2, -BarWidth / 2);
+	glVertex3f(BarLength / 2, BarHeight / 2, BarWidth / 2);
+	glVertex3f(BarLength / 2, -BarHeight / 2, BarWidth / 2);
+	glVertex3f(BarLength / 2, -BarHeight / 2, -BarWidth / 2);
+
+
+	glNormal3f(0, 0, -1);
+	glVertex3f(-BarLength / 2, -BarHeight / 2, -BarWidth / 2);
+	glVertex3f(-BarLength / 2, BarHeight / 2, -BarWidth / 2);
+	glVertex3f(BarLength / 2, BarHeight / 2, -BarWidth / 2);
+	glVertex3f(BarLength / 2, -BarHeight / 2, -BarWidth / 2);
+
+
+	glNormal3f(0, 0, 1);
+	glVertex3f(-BarLength / 2, -BarHeight / 2, BarWidth / 2);
+	glVertex3f(-BarLength / 2, BarHeight / 2, BarWidth / 2);
+	glVertex3f(BarLength / 2, BarHeight / 2, BarWidth / 2);
+	glVertex3f(BarLength / 2, -BarHeight / 2, BarWidth / 2);
+
+	if (!doingShadows)
+	{
+		glColor3ub(255, 0, 0);
+	}
+
+	glNormal3f(0, 1, 0);
+	glVertex3f(-BarLength / 2, BarHeight / 2, -BarWidth / 2);
+	glVertex3f(-BarLength / 2, BarHeight / 2, BarWidth / 2);
+	glVertex3f(BarLength / 2, BarHeight / 2, BarWidth / 2);
+	glVertex3f(BarLength / 2, BarHeight / 2, -BarWidth / 2);
+
+	glEnd();
+	glPopMatrix();
+}
+
+
+
+void TrainView::drawCarts(float t, bool doingShadows)
+{
+	int type = 0;
+	type = (this->tw->splineBrowser->selected(1)) ? 1 : type;
+	type = (this->tw->splineBrowser->selected(2)) ? 2 : type;
+	type = (this->tw->splineBrowser->selected(3)) ? 3 : type;
+	Pnt3f pos, dir, up;
+	this->getPos(t, pos, type);
+	this->getDir(t, dir, type);
+	this->getOrient(t, up, type);
+
+
+	glPushMatrix();
+	glTranslatef(pos.x, pos.y, pos.z);
+
+	Pnt3f u = dir;
+
+	Pnt3f w = u * up;
+	w.normalize();
+	Pnt3f v = w * u;
+	v.normalize();
+
+	float rotation[16] = {
+	u.x, u.y, u.z, 0.0,
+	v.x, v.y, v.z, 0.0,
+	w.x, w.y, w.z, 0.0,
+	0.0, 0.0, 0.0, 1.0 };
+	glMultMatrixf(rotation);
+	glRotatef(90, 0, 1, 0);
+	glTranslatef(0, trainHeight / 2, 0);
+
+#pragma region trainCar
+	glBegin(GL_QUADS);
+	if (!doingShadows)
+	{
+		glColor3ub(255, 255, 255);
+	}
+
+	glNormal3f(0, -1, 0);
+	glVertex3f(-trainWidth / 2, -trainHeight / 2, -trainLength / 2);
+	glVertex3f(trainWidth / 2, -trainHeight / 2, -trainLength / 2);
+	glVertex3f(trainWidth / 2, -trainHeight / 2, trainLength / 2);
+	glVertex3f(-trainWidth / 2, -trainHeight / 2, trainLength / 2);
+
+
+
+
+	glNormal3f(-1, 0, 0);
+	glVertex3f(-trainWidth / 2, -trainHeight / 2, -trainLength / 2);
+	glVertex3f(-trainWidth / 2, trainHeight / 2, -trainLength / 2);
+	glVertex3f(-trainWidth / 2, trainHeight / 2, trainLength / 2);
+	glVertex3f(-trainWidth / 2, -trainHeight / 2, trainLength / 2);
+
+	glNormal3f(1, 0, 0);
+	glVertex3f(trainWidth / 2, -trainHeight / 2, -trainLength / 2);
+	glVertex3f(trainWidth / 2, trainHeight / 2, -trainLength / 2);
+	glVertex3f(trainWidth / 2, trainHeight / 2, trainLength / 2);
+	glVertex3f(trainWidth / 2, -trainHeight / 2, trainLength / 2);
+
+	glNormal3f(0, 0, -1);
+	glVertex3f(-trainWidth / 2, -trainHeight / 2, -trainLength / 2);
+	glVertex3f(trainWidth / 2, -trainHeight / 2, -trainLength / 2);
+	glVertex3f(trainWidth / 2, trainHeight / 2, -trainLength / 2);
+	glVertex3f(-trainWidth / 2, trainHeight / 2, -trainLength / 2);
+	if (!doingShadows)
+	{
+		glColor3ub(0, 255, 0);
+	}
+
+	glNormal3f(0, 1, 0);
+	glVertex3f(-trainWidth / 2, trainHeight / 2, -trainLength / 2);
+	glVertex3f(trainWidth / 2, trainHeight / 2, -trainLength / 2);
+	glVertex3f(trainWidth / 2, trainHeight / 2, trainLength / 2);
+	glVertex3f(-trainWidth / 2, trainHeight / 2, trainLength / 2);
+
+	if (!doingShadows)
+	{
+		glColor3ub(255, 0, 0);
+	}
+	glNormal3f(0, 0, 1);
+	glVertex3f(-trainWidth / 2, -trainHeight / 2, trainLength / 2);
+	glVertex3f(trainWidth / 2, -trainHeight / 2, trainLength / 2);
+	glVertex3f(trainWidth / 2, trainHeight / 2, trainLength / 2);
+	glVertex3f(-trainWidth / 2, trainHeight / 2, trainLength / 2);
+
+
+	glEnd();
+#pragma endregion
+	glPopMatrix();
 }
 
 // 
@@ -693,178 +826,264 @@ doPick()
 	printf("Selected Cube %d\n", selectedCube);
 }
 
-void TrainView::getPos(const float t, Pnt3f & pos, Pnt3f & dir, Pnt3f& up)
+void TrainView::getPos(float t, Pnt3f & pos, int type)
 {
-	if (this->tw->splineBrowser->selected(1) == true)
+	while (t < 0)
 	{
-		ControlPoint p0, p1;
-		float percent = t;
-		for (int i = 0; i < this->tw->m_Track.points.size(); i++)
-		{
-			if (percent >= 0.0f&&percent < 1.0f)
-			{
-				p0 = this->m_pTrack->points[i];
-				p1 = this->m_pTrack->points[(i + 1) % this->m_pTrack->points.size()];
-				break;
-			}
-			percent -= 1;
-		}
+		t += this->tw->m_Track.points.size();
+	}
+	while (t >= this->tw->m_Track.points.size())
+	{
+		t -= this->tw->m_Track.points.size();
+	}
+	if (type == 1)
+	{
+		const ControlPoint* p0, *p1;
+		int i = floor(t);
+		float percent = t - i;
+		p0 = &this->m_pTrack->points[i];
+		p1 = &this->m_pTrack->points[(i + 1) % this->m_pTrack->points.size()];
 
 
-		Pnt3f qt = (1 - percent) * p0.pos + percent * p1.pos;
 
-
-		Pnt3f orient_t = (1 - percent) * p0.orient + percent * p1.orient;
-		orient_t.normalize();
-		Pnt3f cross_t = (p1.pos - p0.pos) * orient_t;
-		cross_t.normalize();
-		cross_t = cross_t * 2.5f;
-
-
+		Pnt3f qt = (1 - percent) * p0->pos + percent * p1->pos;
 
 		pos = qt;
-		dir = (p1.pos - p0.pos);
+	}
+	else if (type == 2)
+	{
+		const ControlPoint *p0, *p1, *p2, *p3;
+		int i = floor(t);
+		float percent = t - i;
+		p0 = &this->m_pTrack->points[i];
+		p1 = &this->m_pTrack->points[(i + 1) % this->m_pTrack->points.size()];
+		p2 = &this->m_pTrack->points[(i + 2) % this->m_pTrack->points.size()];
+		p3 = &this->m_pTrack->points[(i + 3) % this->m_pTrack->points.size()];
 
+		float Gmat[12] =
+		{
+			p0->pos.x,p0->pos.y,p0->pos.z,
+			p1->pos.x,p1->pos.y,p1->pos.z,
+			p2->pos.x,p2->pos.y,p2->pos.z,
+			p3->pos.x,p3->pos.y,p3->pos.z,
+		};
+		glm::mat4x3 G = glm::make_mat4x3(Gmat);
+
+		float Tv[4] = { percent*percent*percent,percent*percent,percent,1 };
+		glm::vec4 T = glm::make_vec4(Tv);
+
+		glm::vec3 Qt = G * CarrientalM*T;
+
+
+		pos.x = Qt.x;
+		pos.y = Qt.y;
+		pos.z = Qt.z;
+	}
+
+	else if (type == 3)
+	{
+		const ControlPoint *p0, *p1, *p2, *p3;
+		int i = floor(t);
+		float percent = t - i;
+		p0 = &this->m_pTrack->points[i];
+		p1 = &this->m_pTrack->points[(i + 1) % this->m_pTrack->points.size()];
+		p2 = &this->m_pTrack->points[(i + 2) % this->m_pTrack->points.size()];
+		p3 = &this->m_pTrack->points[(i + 3) % this->m_pTrack->points.size()];
+
+		float Gmat[12] =
+		{
+			p0->pos.x,p0->pos.y,p0->pos.z,
+			p1->pos.x,p1->pos.y,p1->pos.z,
+			p2->pos.x,p2->pos.y,p2->pos.z,
+			p3->pos.x,p3->pos.y,p3->pos.z,
+		};
+		glm::mat4x3 G = glm::make_mat4x3(Gmat);
+
+		float Tv[4] = { percent*percent*percent,percent*percent,percent,1 };
+		glm::vec4 T = glm::make_vec4(Tv);
+
+		glm::vec3 Qt = G * B_SplineM*T;
+
+		pos.x = Qt.x;
+		pos.y = Qt.y;
+		pos.z = Qt.z;
+	}
+}
+
+void TrainView::getDir(float t, Pnt3f & dir, int type)
+{
+	while (t < 0)
+	{
+		t += this->tw->m_Track.points.size();
+	}
+	while (t >= this->tw->m_Track.points.size())
+	{
+		t -= this->tw->m_Track.points.size();
+	}
+	if (type == 1)
+	{
+		const ControlPoint* p0, *p1;
+		int i = floor(t);
+		float percent = t - i;
+		p0 = &this->m_pTrack->points[i];
+		p1 = &this->m_pTrack->points[(i + 1) % this->m_pTrack->points.size()];
+
+
+		dir = (p1->pos - p0->pos);
+		dir.normalize();
+	}
+	else if (type == 2)
+	{
+		const ControlPoint *p0, *p1, *p2, *p3;
+		int i = floor(t);
+		float percent = t - i;
+		p0 = &this->m_pTrack->points[i];
+		p1 = &this->m_pTrack->points[(i + 1) % this->m_pTrack->points.size()];
+		p2 = &this->m_pTrack->points[(i + 2) % this->m_pTrack->points.size()];
+		p3 = &this->m_pTrack->points[(i + 3) % this->m_pTrack->points.size()];
+
+
+		float Gmat[12] =
+		{
+			p0->pos.x,p0->pos.y,p0->pos.z,
+			p1->pos.x,p1->pos.y,p1->pos.z,
+			p2->pos.x,p2->pos.y,p2->pos.z,
+			p3->pos.x,p3->pos.y,p3->pos.z,
+		};
+		glm::mat4x3 G = glm::make_mat4x3(Gmat);
+
+		float Tv[4] = { percent*percent*percent,percent*percent,percent,1 };
+		glm::vec4 T = glm::make_vec4(Tv);
+
+		float dTv[4] = { 3 * percent*percent,2 * percent,1,0 };
+		glm::vec4 dT = glm::make_vec4(dTv);
+		glm::vec3 dQt = G * CarrientalM*dT;
+		dir.x = dQt.x;
+		dir.y = dQt.y;
+		dir.z = dQt.z;
+
+		dir.normalize();
+	}
+
+	else if (type == 3)
+	{
+		const ControlPoint *p0, *p1, *p2, *p3;
+		int i = floor(t);
+		float percent = t - i;
+		p0 = &this->m_pTrack->points[i];
+		p1 = &this->m_pTrack->points[(i + 1) % this->m_pTrack->points.size()];
+		p2 = &this->m_pTrack->points[(i + 2) % this->m_pTrack->points.size()];
+		p3 = &this->m_pTrack->points[(i + 3) % this->m_pTrack->points.size()];
+
+		float Gmat[12] =
+		{
+			p0->pos.x,p0->pos.y,p0->pos.z,
+			p1->pos.x,p1->pos.y,p1->pos.z,
+			p2->pos.x,p2->pos.y,p2->pos.z,
+			p3->pos.x,p3->pos.y,p3->pos.z,
+		};
+		glm::mat4x3 G = glm::make_mat4x3(Gmat);
+
+
+		float Tv[4] = { percent*percent*percent,percent*percent,percent,1 };
+		glm::vec4 T = glm::make_vec4(Tv);
+
+		float dTv[4] = { 3 * percent*percent,2 * percent,1,0 };
+		glm::vec4 dT = glm::make_vec4(dTv);
+		glm::vec3 dQt = G * B_SplineM*dT;
+		dir.x = dQt.x;
+		dir.y = dQt.y;
+		dir.z = dQt.z;
+
+		dir.normalize();
+	}
+}
+
+void TrainView::getOrient(float t, Pnt3f& up, int type)
+{
+	while (t < 0)
+	{
+		t += this->tw->m_Track.points.size();
+	}
+	while (t >= this->tw->m_Track.points.size())
+	{
+		t -= this->tw->m_Track.points.size();
+	}
+	if (type == 1)
+	{
+		const ControlPoint* p0, *p1;
+		int i = floor(t);
+		float percent = t - i;
+		p0 = &this->m_pTrack->points[i];
+		p1 = &this->m_pTrack->points[(i + 1) % this->m_pTrack->points.size()];
+
+		Pnt3f orient_t = (1 - percent) * p0->orient + percent * p1->orient;
+		orient_t.normalize();
 
 		up = orient_t;
 		up.normalize();
-		dir.normalize();
+
 	}
-	else if (this->tw->splineBrowser->selected(2))
+	else if (type == 2)
 	{
-		ControlPoint p0, p1, p2, p3;
-		float percent = t;
-		for (int i = 0; i < this->tw->m_Track.points.size(); i++)
-		{
-			if (percent >= 0.0f&&percent < 1.0f)
-			{
-				p0 = this->m_pTrack->points[i];
-				p1 = this->m_pTrack->points[(i + 1) % this->m_pTrack->points.size()];
-				p2 = this->m_pTrack->points[(i + 2) % this->m_pTrack->points.size()];
-				p3 = this->m_pTrack->points[(i + 3) % this->m_pTrack->points.size()];
-				break;
-			}
-			percent -= 1;
-		}
+		const ControlPoint *p0, *p1, *p2, *p3;
+		int i = floor(t);
+		float percent = t - i;
+		p0 = &this->m_pTrack->points[i];
+		p1 = &this->m_pTrack->points[(i + 1) % this->m_pTrack->points.size()];
+		p2 = &this->m_pTrack->points[(i + 2) % this->m_pTrack->points.size()];
+		p3 = &this->m_pTrack->points[(i + 3) % this->m_pTrack->points.size()];
 
-		float Gmat[12] =
-		{
-			p0.pos.x,p0.pos.y,p0.pos.z,
-			p1.pos.x,p1.pos.y,p1.pos.z,
-			p2.pos.x,p2.pos.y,p2.pos.z,
-			p3.pos.x,p3.pos.y,p3.pos.z,
-		};
-		glm::mat4x3 G = glm::make_mat4x3(Gmat);
-
-		float Mmat[16] =
-		{
-			-1 / 2.0 ,3 / 2.0 ,-3 / 2.0  ,1 / 2.0,
-			2 / 2.0  ,-5 / 2.0,4 / 2.0   ,-1 / 2.0,
-			-1 / 2.0 ,0 / 2.0 ,1 / 2.0   ,0 / 2.0,
-			0 / 2.0  ,2 / 2.0 ,0 / 2.0   ,0 / 2.0
-		};
-		glm::mat4 M = glm::make_mat4(Mmat);
 
 		float Tv[4] = { percent*percent*percent,percent*percent,percent,1 };
 		glm::vec4 T = glm::make_vec4(Tv);
 
-		glm::vec3 Qt = G * M*T;
 
 		float Omat[12] =
 		{
-			p0.orient.x,p0.orient.y,p0.orient.z,
-			p1.orient.x,p1.orient.y,p1.orient.z,
-			p2.orient.x,p2.orient.y,p2.orient.z,
-			p3.orient.x,p3.orient.y,p3.orient.z,
+			p0->orient.x,p0->orient.y,p0->orient.z,
+			p1->orient.x,p1->orient.y,p1->orient.z,
+			p2->orient.x,p2->orient.y,p2->orient.z,
+			p3->orient.x,p3->orient.y,p3->orient.z,
 		};
 		glm::mat4x3 O = glm::make_mat4x3(Omat);
-		glm::vec3 Ot = O * M*T;
-
-		pos.x = Qt.x;
-		pos.y = Qt.y;
-		pos.z = Qt.z;
+		glm::vec3 Ot = O * CarrientalM*T;
 
 		up.x = Ot.x;
 		up.y = Ot.y;
 		up.z = Ot.z;
 
-		float dTv[4] = { 3 * percent*percent,2 * percent,1,0 };
-		glm::vec4 dT = glm::make_vec4(dTv);
-		glm::vec3 dQt = G * M*dT;
-		dir.x = dQt.x;
-		dir.y = dQt.y;
-		dir.z = dQt.z;
-
 		up.normalize();
-		dir.normalize();
 	}
 
-	else if (this->tw->splineBrowser->selected(3))
+	else if (type == 3)
 	{
-		ControlPoint p0, p1, p2, p3;
-		float percent = t;
-		for (int i = 0; i < this->tw->m_Track.points.size(); i++)
-		{
-			if (percent >= 0.0f&&percent < 1.0f)
-			{
-				p0 = this->m_pTrack->points[i];
-				p1 = this->m_pTrack->points[(i + 1) % this->m_pTrack->points.size()];
-				p2 = this->m_pTrack->points[(i + 2) % this->m_pTrack->points.size()];
-				p3 = this->m_pTrack->points[(i + 3) % this->m_pTrack->points.size()];
-				break;
-			}
-			percent -= 1;
-		}
+		const ControlPoint *p0, *p1, *p2, *p3;
+		int i = floor(t);
+		float percent = t - i;
+		p0 = &this->m_pTrack->points[i];
+		p1 = &this->m_pTrack->points[(i + 1) % this->m_pTrack->points.size()];
+		p2 = &this->m_pTrack->points[(i + 2) % this->m_pTrack->points.size()];
+		p3 = &this->m_pTrack->points[(i + 3) % this->m_pTrack->points.size()];
 
-		float Gmat[12] =
-		{
-			p0.pos.x,p0.pos.y,p0.pos.z,
-			p1.pos.x,p1.pos.y,p1.pos.z,
-			p2.pos.x,p2.pos.y,p2.pos.z,
-			p3.pos.x,p3.pos.y,p3.pos.z,
-		};
-		glm::mat4x3 G = glm::make_mat4x3(Gmat);
-
-		float Mmat[16] =
-		{
-			-1 / 6.0,3 / 6.0,-3 / 6.0,1 / 6.0,
-			3 / 6.0,-6 / 6.0,3 / 6.0,0 / 6.0,
-			-3 / 6.0,0 / 6.0,3 / 6.0,0 / 6.0,
-			1 / 6.0,4 / 6.0,1 / 6.0,0 / 6.0
-		};
-		glm::mat4 M = glm::make_mat4(Mmat);
 
 		float Tv[4] = { percent*percent*percent,percent*percent,percent,1 };
 		glm::vec4 T = glm::make_vec4(Tv);
 
-		glm::vec3 Qt = G * M*T;
-
 		float Omat[12] =
 		{
-			p0.orient.x,p0.orient.y,p0.orient.z,
-			p1.orient.x,p1.orient.y,p1.orient.z,
-			p2.orient.x,p2.orient.y,p2.orient.z,
-			p3.orient.x,p3.orient.y,p3.orient.z,
+			p0->orient.x,p0->orient.y,p0->orient.z,
+			p1->orient.x,p1->orient.y,p1->orient.z,
+			p2->orient.x,p2->orient.y,p2->orient.z,
+			p3->orient.x,p3->orient.y,p3->orient.z,
 		};
 		glm::mat4x3 O = glm::make_mat4x3(Omat);
-		glm::vec3 Ot = O * M*T;
-
-		pos.x = Qt.x;
-		pos.y = Qt.y;
-		pos.z = Qt.z;
+		glm::vec3 Ot = O * B_SplineM*T;
 
 		up.x = Ot.x;
 		up.y = Ot.y;
 		up.z = Ot.z;
 
-		float dTv[4] = { 3 * percent*percent,2 * percent,1,0 };
-		glm::vec4 dT = glm::make_vec4(dTv);
-		glm::vec3 dQt = G * M*dT;
-		dir.x = dQt.x;
-		dir.y = dQt.y;
-		dir.z = dQt.z;
-
 		up.normalize();
-		dir.normalize();
 	}
 }

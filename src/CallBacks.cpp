@@ -31,8 +31,10 @@
 #pragma warning(disable:4312)
 #pragma warning(disable:4311)
 #include <Fl/Fl_File_Chooser.H>
+#include <FL/Fl_Box.H>
 #include <Fl/math.h>
 #pragma warning(pop)
+#include <string>
 
 //***************************************************************************
 //
@@ -45,6 +47,8 @@ void resetCB(Fl_Widget*, TrainWindow* tw)
 	tw->trainView->selectedCube = -1;
 	tw->m_Track.trainU = 0;
 	tw->damageMe();
+	tw->trainView->currTrainSpeed = tw->trainView->defaultSpeed;
+	
 }
 
 //***************************************************************************
@@ -247,5 +251,34 @@ void rmzCB(Fl_Widget*, TrainWindow* tw)
 //===========================================================================
 {
 	rollz(tw, -1);
+}
+
+//***************************************************************************
+//Cart increase and decrease
+
+void incCartCB(Fl_Widget*, TrainWindow* tw)
+//===========================================================================
+{
+	tw->trainView->cartsCount++;
+
+	std::string str("Carts: " + std::to_string(tw->trainView->cartsCount));
+	strcpy_s(tw->currentCartCountStr, str.c_str());
+	tw->CartCount->label(tw->currentCartCountStr);
+	tw->CartCount->redraw_label();
+	tw->damageMe();
+	tw->widgets->damage(1);
+}
+void decCartCB(Fl_Widget*, TrainWindow* tw)
+//===========================================================================
+{
+	tw->trainView->cartsCount--;
+	tw->trainView->cartsCount = (tw->trainView->cartsCount < 0) ? 0 : tw->trainView->cartsCount;
+
+	std::string str("Carts: " + std::to_string(tw->trainView->cartsCount));
+	strcpy_s(tw->currentCartCountStr, str.c_str());
+	tw->CartCount->label(tw->currentCartCountStr);	
+	tw->CartCount->redraw();
+	tw->damageMe();
+	tw->widgets->damage(1);
 }
 

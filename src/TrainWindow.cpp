@@ -236,14 +236,14 @@ advanceTrain(float dir)
 			this->trainView->currTrainSpeed += (-cDir.y)*this->trainView->gravityFactor;
 			this->trainView->currTrainSpeed = (this->trainView->currTrainSpeed < this->trainView->minSpeed) ? this->trainView->minSpeed : this->trainView->currTrainSpeed;
 			this->trainView->currTrainSpeed = (this->trainView->currTrainSpeed > this->trainView->maxSpeed) ? this->trainView->maxSpeed : this->trainView->currTrainSpeed;
-			targetMovement = this->trainView->currTrainSpeed * ((float)speed->value() * .05f) * dir;
+			targetMovement = this->trainView->currTrainSpeed * ((float)speed->value() * .02f) * dir;
 			std::string str = ("Current Speed: " + std::to_string(this->trainView->currTrainSpeed));
 			strcpy_s(this->currentSpeedStr, str.c_str());
 			this->currentSpeed->label(this->currentSpeedStr);
 		}
 		else
 		{
-			targetMovement = this->trainView->defaultSpeed * ((float)speed->value() * .05f) * dir;
+			targetMovement = this->trainView->defaultSpeed * ((float)speed->value() * .02f) * dir;
 			std::string str = ("Current Speed: " + std::to_string(this->trainView->defaultSpeed));
 			strcpy_s(this->currentSpeedStr, str.c_str());
 			this->currentSpeed->label(this->currentSpeedStr);
@@ -270,10 +270,12 @@ advanceTrain(float dir)
 			pv = cv;
 
 		}
+		this->trainView->wheelDegree += 360 * sumMovement / (this->trainView->wheelRaduis*3.1415926*2);
 	}
 	else
 	{
-		this->m_Track.trainU += dir * ((float)speed->value() * .05f);
+		this->m_Track.trainU += dir * ((float)speed->value() * .02f);
+		this->trainView->wheelDegree += 720*dir * ((float)speed->value() * .02f);
 	}
 	float nct = this->m_Track.points.size();
 	if (this->m_Track.trainU > nct) this->m_Track.trainU -= nct;

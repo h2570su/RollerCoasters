@@ -244,10 +244,10 @@ void TrainView::draw()
 	GLfloat lightPosition1[] = { 0,1,1,0 }; // {50, 200.0, 50, 1.0};
 	GLfloat lightPosition2[] = { 1, 0, 0, 0 };
 	GLfloat lightPosition3[] = { 0, -1, 0, 0 };
-	GLfloat yellowLight[] = { 0.0f, 0.0f, .8f, 1.0 };
-	GLfloat whiteLight[] = { 1.0f, 1.0f, 1.0f, 1.0 };
+	GLfloat yellowLight[] = { 0.5f, 0.5f, .1f, 1.0 };
+	GLfloat whiteLight[] = { .5f, .5f, .5f, 1.0 };
 	GLfloat blueLight[] = { .1f,.1f,.3f,1.0 };
-	GLfloat grayLight[] = { .3f, .3f, .3f, 1.0 };
+	GLfloat grayLight[] = { .15f, .15f, .15f, 1.0 };
 
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition1);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, whiteLight);
@@ -260,18 +260,63 @@ void TrainView::draw()
 	glLightfv(GL_LIGHT2, GL_DIFFUSE, blueLight);
 
 	GLfloat noLight[] = { 0,0,0,1 };
-	GLfloat lightPos1[] = { 0,200,0,1 };
-	GLfloat lightColor1[] = { 0,0.2,0,1 };
-	glEnable(GL_LIGHT3);
-	glLightfv(GL_LIGHT3, GL_POSITION, lightPos1);
-	glLightfv(GL_LIGHT3, GL_AMBIENT, lightColor1);
-	glLightfv(GL_LIGHT3, GL_DIFFUSE, lightColor1);
-	glLightfv(GL_LIGHT3, GL_SPECULAR, noLight);
-
 	GLfloat spotDir[] = { 0,-1,0 };
+
+	GLfloat light3Pos[] = { -50,200,-50,1 };
+	GLfloat light3ColorDeep[] = { 0,0.2,0,1 };
+	GLfloat light3ColorLight[] = { 0,0.4,0,1 };
+	glEnable(GL_LIGHT3);
+	glLightfv(GL_LIGHT3, GL_POSITION, light3Pos);
+	glLightfv(GL_LIGHT3, GL_AMBIENT, light3ColorDeep);
+	glLightfv(GL_LIGHT3, GL_DIFFUSE, light3ColorLight);
+	glLightfv(GL_LIGHT3, GL_SPECULAR, light3ColorLight);
+
+
 	glLightfv(GL_LIGHT3, GL_SPOT_DIRECTION, spotDir);
 	glLightf(GL_LIGHT3, GL_SPOT_CUTOFF, 30);
-	glLightf(GL_LIGHT3, GL_SPOT_EXPONENT, 15.0f);
+	glLightf(GL_LIGHT3, GL_SPOT_EXPONENT, 10.0f);
+
+	GLfloat light4Pos[] = { 50,200,50,1 };
+	GLfloat light4ColorDeep[] = { 0.3,0,0,1 };
+	GLfloat light4ColorLight[] = { 0.6,0,0,1 };
+	glEnable(GL_LIGHT4);
+	glLightfv(GL_LIGHT4, GL_POSITION, light4Pos);
+	glLightfv(GL_LIGHT4, GL_AMBIENT, light4ColorDeep);
+	glLightfv(GL_LIGHT4, GL_DIFFUSE, light4ColorLight);
+	glLightfv(GL_LIGHT4, GL_SPECULAR, light4ColorLight);
+
+
+	glLightfv(GL_LIGHT4, GL_SPOT_DIRECTION, spotDir);
+	glLightf(GL_LIGHT4, GL_SPOT_CUTOFF, 30);
+	glLightf(GL_LIGHT4, GL_SPOT_EXPONENT, 10.0f);
+
+	GLfloat light5Pos[] = { -50,200,50,1 };
+	GLfloat light5ColorDeep[] = { 0,0,0.35,1 };
+	GLfloat light5ColorLight[] = { 0,0,0.7,1 };
+	glEnable(GL_LIGHT5);
+	glLightfv(GL_LIGHT5, GL_POSITION, light5Pos);
+	glLightfv(GL_LIGHT5, GL_AMBIENT, light5ColorDeep);
+	glLightfv(GL_LIGHT5, GL_DIFFUSE, light5ColorLight);
+	glLightfv(GL_LIGHT5, GL_SPECULAR, light5ColorLight);
+
+
+	glLightfv(GL_LIGHT5, GL_SPOT_DIRECTION, spotDir);
+	glLightf(GL_LIGHT5, GL_SPOT_CUTOFF, 30);
+	glLightf(GL_LIGHT5, GL_SPOT_EXPONENT, 10.0f);
+
+	GLfloat light6Pos[] = { 50,200,-50,1 };
+	GLfloat light6ColorDeep[] = { 0.3,0.2,0,1 };
+	GLfloat light6ColorLight[] = { 0.6,0.4,0,1 };
+	glEnable(GL_LIGHT6);
+	glLightfv(GL_LIGHT6, GL_POSITION, light6Pos);
+	glLightfv(GL_LIGHT6, GL_AMBIENT, light6ColorDeep);
+	glLightfv(GL_LIGHT6, GL_DIFFUSE, light6ColorLight);
+	glLightfv(GL_LIGHT6, GL_SPECULAR, light6ColorLight);
+
+
+	glLightfv(GL_LIGHT6, GL_SPOT_DIRECTION, spotDir);
+	glLightf(GL_LIGHT6, GL_SPOT_CUTOFF, 30);
+	glLightf(GL_LIGHT6, GL_SPOT_EXPONENT, 10.0f);
 
 
 
@@ -698,7 +743,7 @@ void TrainView::drawCarts(float t, bool doingShadows)
 	0.0, 0.0, 0.0, 1.0 };
 	glMultMatrixf(rotation);
 	glRotatef(90, 0, 1, 0);
-	glTranslatef(0, trainHeight / 2, 0);
+	glTranslatef(0, trainHeight / 2+wheelRaduis, 0);
 
 #pragma region trainCar
 	glBegin(GL_QUADS);
@@ -756,7 +801,105 @@ void TrainView::drawCarts(float t, bool doingShadows)
 
 
 	glEnd();
+
+	glPushMatrix();
+	glTranslatef(trainWidth / 2, -trainHeight / 2, trainLength/2-2);
+	drawWheel(doingShadows);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(trainWidth / 2, -trainHeight / 2, 0);
+	drawWheel(doingShadows);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(trainWidth / 2, -trainHeight / 2, -trainLength/2+2);
+	drawWheel(doingShadows);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(-trainWidth / 2-wheelWidth, -trainHeight / 2, trainLength/2-2);
+	drawWheel(doingShadows);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(-trainWidth / 2-wheelWidth, -trainHeight / 2, 0);
+	drawWheel(doingShadows);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(-trainWidth / 2-wheelWidth, -trainHeight / 2, -trainLength/2+2);
+	drawWheel(doingShadows);
+	glPopMatrix();
+
 #pragma endregion
+	glPopMatrix();
+}
+
+void TrainView::drawWheel(bool doingShadows)
+{
+	glRotatef(90, 0, 1, 0);
+	
+	static GLUquadricObj *objCylinder = gluNewQuadric();
+	if (!doingShadows)
+	{
+		glColor3ub(72, 42, 42);
+	}
+	gluCylinder(objCylinder, this->wheelRaduis, this->wheelRaduis, this->wheelWidth, 64, 5);
+
+
+	glPushMatrix();
+	glTranslatef(0, 0, this->wheelWidth-0.01);
+	static GLUquadricObj *objDisk = gluNewQuadric();
+	if (!doingShadows)
+	{
+		glColor3ub(255, 255, 255);
+	}
+	gluDisk(objDisk, 0, this->wheelRaduis, 64, 5);
+	glRotatef(this->wheelDegree, 0, 0, 1);
+	if (!doingShadows)
+	{
+		glColor3ub(128, 128, 105);
+	}
+	for (int i = 0; i < 4; i++)
+	{
+		glRotatef(45, 0, 0, 1);
+		glBegin(GL_QUADS);
+		glNormal3f(0, 0, 1);
+		glVertex3f(-0.1,this->wheelRaduis , 0.01);
+		glVertex3f(0.1,this->wheelRaduis , 0.01);
+		glVertex3f(0.1,-this->wheelRaduis , 0.01);
+		glVertex3f(-0.1,-this->wheelRaduis , 0.01);
+		glEnd();
+	}
+	glPopMatrix();
+
+
+
+	glPushMatrix();
+	//glTranslatef(0, 0, -this->wheelWidth/2+0.01);
+
+	if (!doingShadows)
+	{
+		glColor3ub(255, 255, 255);
+	}
+	gluDisk(objDisk, 0, this->wheelRaduis, 64, 5);
+	glRotatef(this->wheelDegree, 0, 0, 1);
+	if (!doingShadows)
+	{
+		glColor3ub(128, 128, 105);
+	}
+	for (int i = 0; i < 4; i++)
+	{
+		glRotatef(45, 0, 0, 1);
+		glBegin(GL_QUADS);
+		glNormal3f(0, 0, 1);
+		glVertex3f(-0.1,this->wheelRaduis , -0.01);
+		glVertex3f(0.1,this->wheelRaduis , -0.01);
+		glVertex3f(0.1,-this->wheelRaduis , -0.01);
+		glVertex3f(-0.1,-this->wheelRaduis , -0.01);
+		glEnd();
+	}
 	glPopMatrix();
 }
 

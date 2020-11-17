@@ -73,6 +73,7 @@ public:
 	void drawTrack(Pnt3f pv, Pnt3f cv, Pnt3f cross_t, bool doingShadows);
 	void drawBar(Pnt3f pos, Pnt3f dir, Pnt3f up, bool doingShadows);
 	void drawCarts(float t, bool doingShadows);
+	void drawWheel(bool doingShadows);
 
 	// setup the projection - assuming that the projection stack has been
 	// cleared for you
@@ -119,9 +120,14 @@ public:
 	const float gravityFactor = 9.8/2;
 	
 
-	const float trainWidth = 8;
+	const float trainWidth = 4.5;
 	const float trainHeight = 6;
 	const float trainLength = 15;
+	const float wheelRaduis = 1;
+	const float wheelWidth = .5;
+	float wheelDegree = 0.0f;
+
+
 	const int DIVIDE_LINE = 1000;
 	const float barSpacing = 7.5;
 
